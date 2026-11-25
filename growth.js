@@ -32,29 +32,30 @@
   const POOP_CHANCE = { baby: 1, child: 1, adult: .5 };
 
   /* ---------- 食物 ---------- */
+  // v1.2：每份正餐至少補 1 顆心（25），點心補 1 顆心情，回饋才明顯（塔麻可吉：一餐一顆心）
   // cat：G 菜園 / S 陽光 / H 蜂蜜 / C 好奇 / T 點心；w：四個隱藏傾向的權重
   // unlock：start 開始就有 / baby2 寶寶期有效正餐 2 次後 / child 幼年期
   const FOODS = [
-    { id:'F01', name:'胡蘿蔔',   icon:'🥕', cat:'G', hunger:20, mood:3, w:{G:3},      unlock:'start' },
-    { id:'F02', name:'三葉草',   icon:'☘️', cat:'G', hunger:15, mood:4, w:{G:3},      unlock:'start' },
-    { id:'F03', name:'嫩葉沙拉', icon:'🥗', cat:'G', hunger:20, mood:2, w:{G:2,S:1},  unlock:'baby2' },
-    { id:'F04', name:'小南瓜',   icon:'🎃', cat:'G', hunger:25, mood:2, w:{G:2,H:1},  unlock:'child' },
-    { id:'F05', name:'紅莓果',   icon:'🍓', cat:'S', hunger:15, mood:5, w:{S:3},      unlock:'start' },
-    { id:'F06', name:'太陽橘',   icon:'🍊', cat:'S', hunger:20, mood:4, w:{S:3},      unlock:'start' },
-    { id:'F07', name:'蘋果片',   icon:'🍎', cat:'S', hunger:20, mood:3, w:{S:2,C:1},  unlock:'baby2' },
-    { id:'F08', name:'莓果優格', icon:'🍨', cat:'S', hunger:20, mood:4, w:{S:2,H:1},  unlock:'child' },
-    { id:'F09', name:'蜂蜜',     icon:'🍯', cat:'H', hunger:15, mood:5, w:{H:3},      unlock:'start' },
-    { id:'F10', name:'橡實',     icon:'🌰', cat:'H', hunger:25, mood:3, w:{H:3},      unlock:'start' },
-    { id:'F11', name:'核桃麵包', icon:'🍞', cat:'H', hunger:30, mood:2, w:{H:2,C:1},  unlock:'baby2' },
-    { id:'F12', name:'燕麥粥',   icon:'🥣', cat:'H', hunger:30, mood:2, w:{G:1,H:2},  unlock:'child' },
-    { id:'F13', name:'小菇菇',   icon:'🍄', cat:'C', hunger:20, mood:3, w:{C:3},      unlock:'start' },
-    { id:'F14', name:'葵花子',   icon:'🌻', cat:'C', hunger:15, mood:4, w:{C:3},      unlock:'start' },
-    { id:'F15', name:'神秘果',   icon:'🫐', cat:'C', hunger:15, mood:5, w:{S:1,C:2},  unlock:'baby2' },
-    { id:'F16', name:'花生',     icon:'🥜', cat:'C', hunger:25, mood:3, w:{H:1,C:2},  unlock:'child' },
-    { id:'T01', name:'蜂蜜蛋糕', icon:'🍰', cat:'T', hunger:10, mood:15, w:{}, unlock:'start' },
-    { id:'T02', name:'莓果果凍', icon:'🍮', cat:'T', hunger:5,  mood:15, w:{}, unlock:'start' },
-    { id:'T03', name:'胡蘿蔔餅乾', icon:'🍪', cat:'T', hunger:10, mood:12, w:{}, unlock:'start' },
-    { id:'T04', name:'橡實糖',   icon:'🍬', cat:'T', hunger:5,  mood:18, w:{}, unlock:'child' },
+    { id:'F01', name:'胡蘿蔔',   icon:'🥕', cat:'G', hunger:30, mood:3, w:{G:3},      unlock:'start' },
+    { id:'F02', name:'三葉草',   icon:'☘️', cat:'G', hunger:25, mood:4, w:{G:3},      unlock:'start' },
+    { id:'F03', name:'嫩葉沙拉', icon:'🥗', cat:'G', hunger:30, mood:3, w:{G:2,S:1},  unlock:'baby2' },
+    { id:'F04', name:'小南瓜',   icon:'🎃', cat:'G', hunger:35, mood:3, w:{G:2,H:1},  unlock:'child' },
+    { id:'F05', name:'紅莓果',   icon:'🍓', cat:'S', hunger:25, mood:5, w:{S:3},      unlock:'start' },
+    { id:'F06', name:'太陽橘',   icon:'🍊', cat:'S', hunger:30, mood:4, w:{S:3},      unlock:'start' },
+    { id:'F07', name:'蘋果片',   icon:'🍎', cat:'S', hunger:30, mood:3, w:{S:2,C:1},  unlock:'baby2' },
+    { id:'F08', name:'莓果優格', icon:'🍨', cat:'S', hunger:30, mood:4, w:{S:2,H:1},  unlock:'child' },
+    { id:'F09', name:'蜂蜜',     icon:'🍯', cat:'H', hunger:25, mood:5, w:{H:3},      unlock:'start' },
+    { id:'F10', name:'橡實',     icon:'🌰', cat:'H', hunger:35, mood:3, w:{H:3},      unlock:'start' },
+    { id:'F11', name:'核桃麵包', icon:'🍞', cat:'H', hunger:35, mood:3, w:{H:2,C:1},  unlock:'baby2' },
+    { id:'F12', name:'燕麥粥',   icon:'🥣', cat:'H', hunger:35, mood:3, w:{G:1,H:2},  unlock:'child' },
+    { id:'F13', name:'小菇菇',   icon:'🍄', cat:'C', hunger:30, mood:3, w:{C:3},      unlock:'start' },
+    { id:'F14', name:'葵花子',   icon:'🌻', cat:'C', hunger:25, mood:4, w:{C:3},      unlock:'start' },
+    { id:'F15', name:'神秘果',   icon:'🫐', cat:'C', hunger:25, mood:5, w:{S:1,C:2},  unlock:'baby2' },
+    { id:'F16', name:'花生',     icon:'🥜', cat:'C', hunger:30, mood:3, w:{H:1,C:2},  unlock:'child' },
+    { id:'T01', name:'蜂蜜蛋糕', icon:'🍰', cat:'T', hunger:10, mood:25, w:{}, unlock:'start' },
+    { id:'T02', name:'莓果果凍', icon:'🍮', cat:'T', hunger:10,  mood:25, w:{}, unlock:'start' },
+    { id:'T03', name:'胡蘿蔔餅乾', icon:'🍪', cat:'T', hunger:10, mood:25, w:{}, unlock:'start' },
+    { id:'T04', name:'橡實糖',   icon:'🍬', cat:'T', hunger:10,  mood:30, w:{}, unlock:'child' },
   ];
   const FOOD = Object.fromEntries(FOODS.map(f => [f.id, f]));
   const CATS = ['G', 'S', 'H', 'C'];

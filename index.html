@@ -50,7 +50,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14p
 .status .chip.warn{background:var(--low);color:#fff}
 .hearts{display:flex;gap:14px;grid-column:1/-1;font-size:12px;color:var(--muted)}
 .hearts span{display:flex;align-items:center;gap:4px}
-.hearts b{font-weight:400;letter-spacing:1px;font-size:14px}
+.hearts b{font-weight:400;letter-spacing:1px;font-size:14px;display:inline-block;color:#E0603A}
+.hearts span:last-child b{color:#E07A92}
+.hearts b.pop{animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(1)}30%{transform:scale(1.45)}60%{transform:scale(.92)}100%{transform:scale(1)}}
 
 .stage-wrap{position:relative;border-radius:22px;overflow:hidden;background:#CFE8F5;box-shadow:0 0 0 2px var(--hair),0 8px 22px -12px rgba(70,90,40,.45)}
 @media (max-width:520px){.stage-wrap{margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));border-radius:0;box-shadow:none}}
@@ -437,7 +440,7 @@ function animState(p, t){
     case 'pout': s.sway = sin(t * 2.2) * .06; s.face = 'refuse'; s.fx = 'call'; break;
     case 'tired': s.bob = -3 + sin(t * 1.2); s.face = 'sleepy'; s.fx = 'zz'; break;
     case 'sleep': s.lie = true; s.bob = sin(t * 1.6) * .8; s.face = 'sleepy'; s.fx = 'zzz'; break;
-    case 'eat': s.bob = sin(t * 7) * 1.2; s.face = 'eat'; s.fx = t % 2 < 1 ? 'heart' : null; break;
+    case 'eat': { const c = t % .6; s.squash = c < .18 ? sin(c / .18 * PI) * .07 : 0; s.bob = c < .18 ? 0 : sin(t * 7) * 1.2; s.face = 'eat'; s.fx = t > .5 ? 'heart' : null; break; }
     case 'refuse': s.sway = sin(t * 14) * .08; s.face = 'refuse'; break;
     case 'headpat': s.squash = .05 + sin(t * 7) * .02; s.face = 'pat'; s.fx = 'heart'; break;
     case 'sick': s.sway = sin(t) * .04; s.face = 'sick'; s.fx = 'sneeze'; break;
@@ -518,7 +521,7 @@ function drawPet(p, now){
   else if (st === 'baby') hgt = drawBaby(s, now);
   else hgt = drawHead(charOf(f), s, scale, st === 'adult' ? FORMS[f] : null, now);
   ctx.restore();
-  p._top = p.y - hgt - s.bob; p._h = hgt;
+  p._top = p.y - hgt - s.bob; p._h = hgt; p._w = img ? img.width * hgt / img.height : hgt;
   if (G.sleeping && st !== 'egg' && !mg && !actImg(f, 'sleep', true)) drawBlanket(p, scale);
 }
 // 森林寶寶正式圖的程式疊加：睡覺閉眼、嫩芽傾向提示（位置是相對圖片的比例）
@@ -625,6 +628,37 @@ function drawBlanket(p, scale){
   const w = 96 * scale, x = p.x - w / 2, y = p.y - 34 * scale;
   rr(x, y, w, 36 * scale, 14); fs('#9CCB7E', '#5E8E45', 2);
   ctx.fillStyle = 'rgba(255,255,255,.55)'; for (let i = 0; i < 5; i++){ ell(x + 14 + i * w / 5.4, y + 14 * scale, 3, 2); ctx.fill(); }
+}
+
+/* ---------- 飄字回饋（+♥ 等） ---------- */
+const floaters = [];
+function floatText(text, color, delay = 0){ const now = performance.now(); const live = floaters.filter(f => now - f.t0 < 1.6e3).length; floaters.push({ text, color, t0: now + delay, slot: live % 3 }); }
+function drawFloaters(now){
+  for (let i = floaters.length - 1; i >= 0; i--){
+    const f = floaters[i], e = (now - f.t0) / 1000;
+    if (e < 0) continue;
+    if (e > 1.6){ floaters.splice(i, 1); continue; }
+    // 飄在寵物身體右側（頭頂留給對話框），多筆時往下錯開
+    const side = pet.x > W - 130 ? -1 : 1, x = pet.x + side * ((pet._w || 80) / 2 + 42), y = pet.y - (pet._h || 100) * .55 + f.slot * 24;
+    ctx.globalAlpha = e < .2 ? e / .2 : 1 - max(0, e - 1) / .6;
+    const k = e < .2 ? .6 + e * 2 : 1;
+    ctx.save(); ctx.translate(x, y - e * 30); ctx.scale(k, k); txt(f.text, 0, 0, 17, f.color); ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+// 拿在嘴邊的食物：三口咬掉，咬的時候掉碎屑
+function drawProp(p, now){
+  if (!p.prop || p.anim !== 'eat' || !p._h) return;
+  if (IMG[`${G.form}_act_eat`]) return;   // 幼年角色的吃東西圖本身就拿著食物
+  const e = (now - (p.propT || now)) / 1000, bites = min(3, floor(e / .6));
+  if (bites >= 3) return;
+  const hx = p.x + p.dir * p._h * .02, hy = p.y - p._h * .4 + abs(sin(e * 10)) * 2;
+  const size = 42 * (1 - bites * .22);
+  ctx.save(); ctx.globalAlpha = 1; ctx.fillStyle = '#000';
+  emoji(p.prop, hx, hy, size); ctx.restore();
+  const ph = (e % .6) / .6;
+  if (ph < .45) for (let i = 0; i < 4; i++){ const a = i * 1.7 + bites; ctx.globalAlpha = 1 - ph / .45; ctx.fillStyle = '#C98A3E'; ell(hx + cos(a) * (10 + ph * 26), hy + 8 + ph * 30 + sin(a) * 6, 2.4, 2.4); ctx.fill(); }
+  ctx.globalAlpha = 1;
 }
 
 /* ---------- 頭頂符號與對話框 ---------- */
@@ -820,24 +854,34 @@ function feed(food){
   if (res.refused){
     G.mood = clamp(G.mood + res.mood);
     if (st === 'child') G.R.overfeed++;
-    pet.run([{ anim:'refuse', dur:1800, say: line('full') }]); save(); renderUI(); return;
+    pet.run([{ anim:'refuse', dur:1800, say: line('full') }]); floatText('吃不下了', '#8A7560'); save(); renderUI(); return;
   }
   G.feedLog.push({ t: G.t, id: food.id, counted: !!res.counts && food.cat !== 'T', treat: food.cat === 'T' });
   G.feedLog = recentFeeds(3 * HOUR);
-  pet.run([{ anim:'eat', dur:2400, prop: food.icon, say: food.cat === 'T' ? line('treat') : res.favorite ? line('fav') : line('fed'), end: () => {
-    G.hunger = clamp(G.hunger + res.hunger); G.mood = clamp(G.mood + res.mood); pet.prop = null;
-    if (food.cat === 'T'){
-      G.dayStats.treats++; if (st === 'child'){ G.R.treats++; G.R.foods[food.id] = (G.R.foods[food.id] || 0) + 1; }
-      if (recentFeeds(HOUR).filter(f => f.treat).length >= 3 && !G.sick) getSick('treat');
-    } else {
-      G.dayStats.meals++; G.dayStats.cats[food.cat]++;
-      if (Math.random() < Gr.POOP_CHANCE[st] && !G.poopDue) G.poopDue = G.t + (20 + floor(Gr.roll(G.petId, 'poop' + G.t) * 20)) * MIN;
-      if (st === 'baby'){ for (const c in res.w) G.hidden[c] += res.w[c]; if (res.valid) G.babyMeals++; }
-      if (st === 'child'){ const R = G.R; R.meals++; R.cats[food.cat]++; R.foods[food.id] = (R.foods[food.id] || 0) + 1; if (res.favorite) R.favMeals++; }
-    }
-    save(); renderUI();
-  } }]);
-  renderUI();
+  // 效果立刻生效（以前要等動畫播完，連點時前一次會被取消）
+  const before = { h: G.hunger, m: G.mood };
+  G.hunger = clamp(G.hunger + res.hunger); G.mood = clamp(G.mood + res.mood);
+  if (food.cat === 'T'){
+    G.dayStats.treats++; if (st === 'child'){ G.R.treats++; G.R.foods[food.id] = (G.R.foods[food.id] || 0) + 1; }
+  } else {
+    G.dayStats.meals++; G.dayStats.cats[food.cat]++;
+    if (Math.random() < Gr.POOP_CHANCE[st] && !G.poopDue) G.poopDue = G.t + (20 + floor(Gr.roll(G.petId, 'poop' + G.t) * 20)) * MIN;
+    if (st === 'baby'){ for (const c in res.w) G.hidden[c] += res.w[c]; if (res.valid) G.babyMeals++; }
+    if (st === 'child'){ const R = G.R; R.meals++; R.cats[food.cat]++; R.foods[food.id] = (R.foods[food.id] || 0) + 1; if (res.favorite) R.favMeals++; }
+  }
+  // 表演：拿著食物咬三口、碎屑、頭上飄 +♥、狀態列愛心跳一下、咀嚼音效
+  pet.queue = []; pet.cur = null; pet.target = null;
+  pet.run([{ anim:'eat', dur:2100, prop: food.icon, start: p => { p.propT = performance.now(); },
+    say: food.cat === 'T' ? line('treat') : res.favorite ? line('fav') : line('fed'),
+    end: p => { p.prop = null;
+      if (food.cat === 'T' && recentFeeds(HOUR).filter(f => f.treat).length >= 3 && !G.sick){ getSick('treat'); save(); renderUI(); }
+    } }]);
+  const gainH = round((G.hunger - before.h) / 25 * 2) / 2, gainM = round((G.mood - before.m) / 25 * 2) / 2;
+  if (gainH > 0) floatText(`飽足 +${gainH === .5 ? '½' : gainH}♥`, '#E0603A', 0);
+  if (gainM > 0) floatText(`心情 +${gainM === .5 ? '½' : gainM}♥`, '#E07A92', gainH > 0 ? 350 : 0);
+  if (res.favorite) floatText('最愛！', '#F2A13A', 700);
+  chomp();
+  save(); renderUI(true);
 }
 function doAction(type){
   switch (type){
@@ -930,6 +974,8 @@ function stateLabel(){
   if (G.mood > 75) return ['心情很好', false];
   return ['悠閒中', false];
 }
+let lastHearts = { h: -1, m: -1 };
+function bump(id){ const el = document.getElementById(id); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 function renderStatus(){
   const st = stageOf(G.form);
   const stName = { egg:'蛋', baby:'寶寶', child:'幼年', adult:'成年' }[st];
@@ -937,6 +983,10 @@ function renderStatus(){
   const [lab, warn] = stateLabel(); const chip = document.getElementById('chip'); chip.textContent = lab; chip.classList.toggle('warn', warn);
   document.getElementById('hHunger').textContent = st === 'egg' ? '－' : heartStr(G.hunger);
   document.getElementById('hMood').textContent = st === 'egg' ? '－' : heartStr(G.mood);
+  const hh = heartStr(G.hunger).split('♥').length, hm = heartStr(G.mood).split('♥').length;
+  if (lastHearts.h >= 0 && hh > lastHearts.h) bump('hHunger');
+  if (lastHearts.m >= 0 && hm > lastHearts.m) bump('hMood');
+  lastHearts = { h: hh, m: hm };
 }
 const ACTIONS = [
   ['feedMenu', '🍽', '餵食'], ['sleep', '🌙', '去睡覺'], ['playMenu', '🎮', '玩耍'], ['medicine', '🌿', '藥草'],
@@ -1072,6 +1122,7 @@ function tone(freqs, dur = .12){
   freqs.forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = f; const t0 = actx.currentTime + i * dur; g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.08, t0 + .02); g.gain.exponentialRampToValueAtTime(.001, t0 + dur); o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + dur + .02); });
 }
 const playCall = () => tone([880, 660]);
+const chomp = () => { tone([392, 523], .09); setTimeout(() => tone([440, 587], .09), 600); setTimeout(() => tone([494, 659, 784], .1), 1200); };
 const playChime = () => tone([523, 659, 784, 1047], .14);
 
 /* =====================================================================
@@ -1119,7 +1170,7 @@ function frame(now){
   ctx.clearRect(0, 0, W, H);
   if (mg){ mg.kind === 'catch' ? drawCatch(now) : drawGuess(now); }
   else {
-    drawForest(now); drawPoops(now); drawPet(pet, now); drawFx(pet, now); drawSpeech(pet, now);
+    drawForest(now); drawPoops(now); drawPet(pet, now); drawProp(pet, now); drawFx(pet, now); drawSpeech(pet, now); drawFloaters(now);
     if (G.sleeping){ ctx.fillStyle = `rgba(20,30,70,${BG.night && skyPhase(hourOf(G.t)) === 'night' ? .12 : .28})`; ctx.fillRect(0, 0, W, H); }
     if (needsCall()){ const k = 1 + sin(now / 160) * .08; ctx.save(); ctx.translate(W - 26, 26); ctx.scale(k, k); ell(0, 0, 16, 16); fs('rgba(255,255,255,.92)', '#E2A13A', 2); emoji('🔔', 0, 1, 17); ctx.restore(); }
     const fl = (now - flashAt) / 1000; if (fl < 1.2){ ctx.fillStyle = `rgba(255,255,240,${(1 - fl / 1.2) * .8})`; ctx.fillRect(0, 0, W, H); }
