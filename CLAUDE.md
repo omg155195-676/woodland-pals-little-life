@@ -10,7 +10,7 @@ https://omg155195-676.github.io/woodland-pals-little-life/
 - `index.html`：遊戲本體（HTML＋CSS＋JS，沒有建置步驟）
 - `growth.js`：**所有成長規則**（食物表、型態表、第一／二階段判定、隱藏條件、種子亂數）。純函式，遊戲、測試、模擬共用同一份
 - `sw.js`：離線快取。**任何檔案改動後都要把 `VERSION` 加一**（例如 `wp-life-v1` → `wp-life-v2`），新增的素材也要加進 `CORE` 清單
-- `manifest.webmanifest`、`icons/`：PWA 安裝設定與 App 圖示（目前圖示是暫代版）
+- `manifest.webmanifest`、`icons/`：PWA 安裝設定與 App 圖示（森林寶寶從橡實蛋探頭，ChatGPT 生成；maskable 版外圍加留白）
 - `assets/characters/{型態}/face/`：表情圖；目前幼年四角色的表情用 LINE 日常表情貼（暫代）
 - `assets/characters/{型態}/act/{型態}_act_{idle|eat|sleep|play|sick}.webp`：正式動作圖（蛋、寶寶、四隻幼年已完成；成年型尚未製作）。新增後要登記在 `index.html` 的 `ART_ACTS`。去背用 `tools/cutout.py`
 - `assets/backgrounds/bg_forest_{day|dusk|night}.webp`：森林背景（已完成），登記在 `ART_BG`
