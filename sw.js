@@ -1,5 +1,5 @@
 // 離線快取：任何檔案改動後都要把 VERSION 加一（wp-life-v1 → wp-life-v2），新增的素材也要加進 CORE 清單。
-const VERSION = 'wp-life-v8';
+const VERSION = 'wp-life-v9';
 const CORE = [
   './',
   './index.html',
@@ -48,6 +48,7 @@ const CORE = [
   './assets/characters/piko_p/act/piko_p_act_idle.webp',
   './assets/characters/piko_r/act/piko_r_act_idle.webp',
   './assets/characters/piko_f/act/piko_f_act_idle.webp',
+  './assets/characters/piko_h/act/piko_h_act_idle.webp',
   './assets/characters/dodo/face/dodo_face_hug.webp',
   './assets/characters/dodo/face/dodo_face_hungry.webp',
   './assets/characters/dodo/face/dodo_face_ok.webp',
