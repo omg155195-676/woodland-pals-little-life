@@ -474,6 +474,7 @@ for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(
 const ART_ACTS = {
   egg: ['idle'],                       // 橡實蛋 v3（2026-11-25 定稿）
   baby: ['idle'],                      // 森林寶寶 v1（2026-11-25 定稿）
+  kuri: ['idle', 'eat', 'sleep', 'play', 'sick'],   // KURI v1（2026-11-25 定稿）
   // kuri: ['idle', 'eat', 'sleep', 'play', 'sick'],
 };
 for (const [f, acts] of Object.entries(ART_ACTS)) for (const a of acts){
@@ -496,20 +497,21 @@ function drawPet(p, now){
   ell(p.x, p.y, 34 * scale * (1 - s.bob / 70), 6); ctx.fillStyle = 'rgba(60,80,30,.18)'; ctx.fill();
   ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(s.sway); ctx.translate(0, -s.bob);
   if (s.squash) ctx.scale(1 + s.squash, 1 - s.squash);
-  const img = IMG[`${f}_act_${actFor(p.anim)}`] || IMG[`${f}_act_idle`];
+  const img = actImg(f, actFor(p.anim));
   let hgt = 0;
   if (img){
-    hgt = 118 * scale; const w = img.width * hgt / img.height;
+    hgt = img.height * 118 * scale / 384; const w = img.width * hgt / img.height;   // 所有動作圖用同一個比例（idle 高 384px）
     if (p.dir < 0 && st !== 'egg') ctx.scale(-1, 1);
     ctx.drawImage(img, -w / 2, -hgt, w, hgt);
     if (st === 'egg') eggCrack(hgt, w);
     if (st === 'baby') babyOverlay(s, hgt, w, now);
+    if (st === 'adult' && !IMG[`${f}_act_idle`]){ if (p.dir < 0) ctx.scale(-1, 1); adultBadge(FORMS[f], charOf(f), hgt, w, now); }
   } else if (st === 'egg') hgt = drawEgg(now);
   else if (st === 'baby') hgt = drawBaby(s, now);
   else hgt = drawHead(charOf(f), s, scale, st === 'adult' ? FORMS[f] : null, now);
   ctx.restore();
   p._top = p.y - hgt - s.bob; p._h = hgt;
-  if (G.sleeping && st !== 'egg' && !mg) drawBlanket(p, scale);
+  if (G.sleeping && st !== 'egg' && !mg && !actImg(f, 'sleep', true)) drawBlanket(p, scale);
 }
 // 森林寶寶正式圖的程式疊加：睡覺閉眼、嫩芽傾向提示（位置是相對圖片的比例）
 const BABY_EYES = [[-.105, .388], [.209, .388]], BABY_LEAF = [.139, .90];
@@ -537,6 +539,18 @@ function eggCrack(hgt, w){
   const y = -hgt * .36, s = w / 2.6;
   ctx.strokeStyle = '#4A2A16'; ctx.lineWidth = max(2, hgt / 45); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(-s, y); ctx.lineTo(-s * .55, y + s * .22); ctx.lineTo(-s * .15, y - s * .12); ctx.lineTo(s * .25, y + s * .2); ctx.lineTo(s * .6, y - s * .08); ctx.stroke();
+}
+// 找動作圖：型態自己的 → 成年型還沒有圖時借用幼年角色的圖 → 同型態的 idle
+function actImg(f, act, exact){
+  const ch = charOf(f), adult = stageOf(f) === 'adult';
+  return IMG[`${f}_act_${act}`] || (adult && IMG[`${ch}_act_${act}`]) || (exact ? null : IMG[`${f}_act_idle`] || (adult && IMG[`${ch}_act_idle`]));
+}
+// 成年型正式圖完成前：在幼年圖旁加上代表配件的徽章
+function adultBadge(F, ch, hgt, w, now){
+  const t = now / 1000, bx = w * .3, by = -hgt * .55;
+  rr(bx - 17, by - 17, 34, 34, 17); fs('rgba(255,255,255,.92)', CHAR_COLOR[ch].accent, 2.4);
+  emoji(F.badge, bx, by + 1, 20);
+  if (F.hidden) for (let i = 0; i < 3; i++){ const a = t * 1.4 + i * 2.1; ctx.globalAlpha = .5 + .5 * sin(t * 4 + i); txt('✦', cos(a) * w * .6, -hgt * .55 + sin(a) * hgt * .3, 13, '#F2B33D'); ctx.globalAlpha = 1; }
 }
 function drawEgg(now){
   // 暫代：橡實蛋（之後換成 ChatGPT 正式圖）
