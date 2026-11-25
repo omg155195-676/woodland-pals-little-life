@@ -1,5 +1,5 @@
 // 離線快取：任何檔案改動後都要把 VERSION 加一（wp-life-v1 → wp-life-v2），新增的素材也要加進 CORE 清單。
-const VERSION = 'wp-life-v4';
+const VERSION = 'wp-life-v5';
 const CORE = [
   './',
   './index.html',
@@ -15,6 +15,21 @@ const CORE = [
   './assets/characters/kuri/act/kuri_act_sleep.webp',
   './assets/characters/kuri/act/kuri_act_play.webp',
   './assets/characters/kuri/act/kuri_act_sick.webp',
+  './assets/characters/sunny/act/sunny_act_idle.webp',
+  './assets/characters/sunny/act/sunny_act_eat.webp',
+  './assets/characters/sunny/act/sunny_act_sleep.webp',
+  './assets/characters/sunny/act/sunny_act_play.webp',
+  './assets/characters/sunny/act/sunny_act_sick.webp',
+  './assets/characters/dodo/act/dodo_act_idle.webp',
+  './assets/characters/dodo/act/dodo_act_eat.webp',
+  './assets/characters/dodo/act/dodo_act_sleep.webp',
+  './assets/characters/dodo/act/dodo_act_play.webp',
+  './assets/characters/dodo/act/dodo_act_sick.webp',
+  './assets/characters/piko/act/piko_act_idle.webp',
+  './assets/characters/piko/act/piko_act_eat.webp',
+  './assets/characters/piko/act/piko_act_sleep.webp',
+  './assets/characters/piko/act/piko_act_play.webp',
+  './assets/characters/piko/act/piko_act_sick.webp',
   './assets/characters/dodo/face/dodo_face_hug.webp',
   './assets/characters/dodo/face/dodo_face_hungry.webp',
   './assets/characters/dodo/face/dodo_face_ok.webp',
