@@ -79,6 +79,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14p
 .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .opt{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--hair);border-radius:14px;padding:10px;text-align:left;cursor:pointer;display:flex;gap:10px;align-items:center;min-width:0}
 .opt .ic{font-size:26px}
+.opt .ic img{width:34px;height:34px;object-fit:contain;display:block}
 .opt .t{display:flex;flex-direction:column;gap:2px;min-width:0}
 .opt .t small{color:var(--muted);font-size:11px}
 .opt[aria-pressed=true]{border-color:var(--main);background:var(--main-soft)}
@@ -477,7 +478,7 @@ for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(
 const ART_ACTS = {
   egg: ['idle'],                       // 橡實蛋 v3（2026-11-25 定稿）
   baby: ['idle'],                      // 森林寶寶 v1（2026-11-25 定稿）
-  kuri:  ['idle', 'eat', 'sleep', 'play', 'sick'],  // 四隻幼年角色 v1（2026-11-25 定稿）
+  kuri:  ['idle', 'eat', 'sleep', 'play', 'sick', 'hold', 'hold_front'],  // 四隻幼年角色 v1（2026-11-25 定稿）；hold＝捧著食物（2026-11-25）
   sunny: ['idle', 'eat', 'sleep', 'play', 'sick'],
   dodo:  ['idle', 'eat', 'sleep', 'play', 'sick'],
   piko:  ['idle', 'eat', 'sleep', 'play', 'sick'],
@@ -490,6 +491,19 @@ const ART_ACTS = {
 for (const [f, acts] of Object.entries(ART_ACTS)) for (const a of acts){
   const img = new Image(); img.onload = () => { IMG[`${f}_act_${a}`] = img; }; img.src = `assets/characters/${f}/act/${f}_act_${a}.webp`;
 }
+// 「捧著食物」姿勢：身體層 → 食物圖示 → 前掌層。錨點 [x 從中心, y 從底部, 圓半徑]，都是除以圖高（tools/holdpose.py 印出來的）
+const HOLD = {
+  kuri: [-0.025, 0.297, 0.117],
+};
+// 食物圖示 v1（2026-11-25，ChatGPT 生成，tools/foodsheet.py 切圖）
+for (const id of Object.keys(FOOD)){ const img = new Image(); img.onload = () => { IMG[`food_${id}`] = img; }; img.src = `assets/food/${id}.webp`; }
+function drawFoodImg(id, x, y, size){
+  const img = IMG[`food_${id}`];
+  if (!img){ ctx.save(); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; emoji(FOOD[id].icon, x, y, size * .9); ctx.restore(); return; }
+  const k = size / max(img.width, img.height);
+  ctx.drawImage(img, x - img.width * k / 2, y - img.height * k / 2, img.width * k, img.height * k);
+}
+const biteOf = p => min(2, floor(((performance.now() - (p.propT || 0)) / 1000) / .6));   // 0、1、2 口
 function actFor(anim){
   if (anim === 'sleep') return 'sleep';
   if (anim === 'eat' || anim === 'sniff') return 'eat';
@@ -512,7 +526,15 @@ function drawPet(p, now){
   if (img){
     hgt = img.height * 118 * scale / 384; const w = img.width * hgt / img.height;   // 所有動作圖用同一個比例（idle 高 384px）
     if (p.dir < 0 && st !== 'egg') ctx.scale(-1, 1);
-    ctx.drawImage(img, -w / 2, -hgt, w, hgt);
+    const hold = p.anim === 'eat' && p.prop && HOLD[f] && IMG[`${f}_act_hold`] && IMG[`${f}_act_hold_front`];
+    if (hold){
+      const hb = IMG[`${f}_act_hold`], hh = hb.height * 118 * scale / 384, hw = hb.width * hh / hb.height, [ax, ay, ar] = HOLD[f];
+      const fx = ax * hh, fy = -ay * hh, size = ar * hh * 2.4 * (1 - biteOf(p) * .16);
+      ctx.drawImage(hb, -hw / 2, -hh, hw, hh);
+      drawFoodImg(p.prop, fx, fy + biteOf(p) * ar * hh * .12, size);
+      ctx.drawImage(IMG[`${f}_act_hold_front`], -hw / 2, -hh, hw, hh);
+      p._food = { x: p.x + (p.dir < 0 ? -1 : 1) * fx, y: p.y - s.bob + fy };
+    } else { ctx.drawImage(img, -w / 2, -hgt, w, hgt); p._food = null; }
     if (st === 'egg') eggCrack(hgt, w);
     if (st === 'baby') babyOverlay(s, hgt, w, now);
     if (st === 'adult' && !IMG[`${f}_act_idle`]){ if (p.dir < 0) ctx.scale(-1, 1); adultBadge(FORMS[f], charOf(f), hgt, w, now); }
@@ -646,18 +668,19 @@ function drawFloaters(now){
   }
   ctx.globalAlpha = 1;
 }
-// 拿在嘴邊的食物：三口咬掉，咬的時候掉碎屑
+// 吃東西：有「捧著」姿勢的畫在手裡（drawPet 裡），這裡只補碎屑；沒有的拿在嘴邊；幼年舊的吃東西圖本身拿著固定食物
 function drawProp(p, now){
   if (!p.prop || p.anim !== 'eat' || !p._h) return;
-  if (IMG[`${G.form}_act_eat`]) return;   // 幼年角色的吃東西圖本身就拿著食物
-  const e = (now - (p.propT || now)) / 1000, bites = min(3, floor(e / .6));
-  if (bites >= 3) return;
-  const hx = p.x + p.dir * p._h * .02, hy = p.y - p._h * .4 + abs(sin(e * 10)) * 2;
-  const size = 42 * (1 - bites * .22);
-  ctx.save(); ctx.globalAlpha = 1; ctx.fillStyle = '#000';
-  emoji(p.prop, hx, hy, size); ctx.restore();
+  const e = (now - (p.propT || now)) / 1000, bites = biteOf(p);
+  let hx, hy;
+  if (p._food){ hx = p._food.x; hy = p._food.y; }
+  else {
+    if (IMG[`${G.form}_act_eat`]) return;
+    hx = p.x + p.dir * p._h * .02; hy = p.y - p._h * .4 + abs(sin(e * 10)) * 2;
+    drawFoodImg(p.prop, hx, hy, 40 * (1 - bites * .18));
+  }
   const ph = (e % .6) / .6;
-  if (ph < .45) for (let i = 0; i < 4; i++){ const a = i * 1.7 + bites; ctx.globalAlpha = 1 - ph / .45; ctx.fillStyle = '#C98A3E'; ell(hx + cos(a) * (10 + ph * 26), hy + 8 + ph * 30 + sin(a) * 6, 2.4, 2.4); ctx.fill(); }
+  if (ph < .45) for (let i = 0; i < 4; i++){ const a = i * 1.7 + bites; ctx.globalAlpha = 1 - ph / .45; ctx.fillStyle = '#C98A3E'; ell(hx + cos(a) * (10 + ph * 26), hy - 6 + ph * 30 + sin(a) * 6, 2.4, 2.4); ctx.fill(); }
   ctx.globalAlpha = 1;
 }
 
@@ -871,7 +894,7 @@ function feed(food){
   }
   // 表演：拿著食物咬三口、碎屑、頭上飄 +♥、狀態列愛心跳一下、咀嚼音效
   pet.queue = []; pet.cur = null; pet.target = null;
-  pet.run([{ anim:'eat', dur:2100, prop: food.icon, start: p => { p.propT = performance.now(); },
+  pet.run([{ anim:'eat', dur:2100, prop: food.id, start: p => { p.propT = performance.now(); },
     say: food.cat === 'T' ? line('treat') : res.favorite ? line('fav') : line('fed'),
     end: p => { p.prop = null;
       if (food.cat === 'T' && recentFeeds(HOUR).filter(f => f.treat).length >= 3 && !G.sick){ getSick('treat'); save(); renderUI(); }
@@ -1020,7 +1043,7 @@ function openFeed(kind = 'meal'){
   const desc = f => `飽足 ${f.hunger >= 25 ? '＋＋＋' : f.hunger >= 20 ? '＋＋' : '＋'} · 心情 ${f.mood >= 12 ? '＋＋＋' : f.mood >= 4 ? '＋＋' : '＋'}`;
   openSheet(`<h2>要給${petName()}吃什麼？</h2>
     <div class="tabs" role="tablist"><button class="tab" role="tab" data-kind="meal" aria-selected="${kind === 'meal'}" type="button">正餐</button><button class="tab" role="tab" data-kind="treat" aria-selected="${kind === 'treat'}" type="button">點心</button></div>
-    <div class="opts">${list.map(f => `<button class="opt" type="button" data-food="${f.id}"><span class="ic" aria-hidden="true">${f.icon}</span><span class="t">${f.name}<small>${desc(f)}</small></span></button>`).join('')}</div>
+    <div class="opts">${list.map(f => `<button class="opt" type="button" data-food="${f.id}"><span class="ic" aria-hidden="true"><img src="assets/food/${f.id}.webp" alt="" onerror="this.replaceWith('${f.icon}')"></span><span class="t">${f.name}<small>${desc(f)}</small></span></button>`).join('')}</div>
     ${kind === 'treat' ? '<p>點心會讓心情變好，但一次吃太多會肚子痛喔。</p>' : ''}
     <button class="close" type="button" data-close>取消</button>`, () => {
     sheetBody.querySelectorAll('[data-kind]').forEach(b => b.addEventListener('click', () => openFeed(b.dataset.kind)));

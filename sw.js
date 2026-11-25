@@ -1,5 +1,5 @@
 // 離線快取：任何檔案改動後都要把 VERSION 加一（wp-life-v1 → wp-life-v2），新增的素材也要加進 CORE 清單。
-const VERSION = 'wp-life-v12';
+const VERSION = 'wp-life-v13';
 const CORE = [
   './',
   './index.html',
@@ -72,7 +72,29 @@ const CORE = [
   './assets/characters/sunny/face/sunny_face_shock.webp',
   './assets/characters/sunny/face/sunny_face_smug.webp',
   './assets/characters/sunny/face/sunny_face_stareyes.webp',
-  './assets/characters/sunny/face/sunny_face_wink.webp'];
+  './assets/characters/sunny/face/sunny_face_wink.webp',
+  './assets/food/F01.webp',
+  './assets/food/F02.webp',
+  './assets/food/F03.webp',
+  './assets/food/F04.webp',
+  './assets/food/F05.webp',
+  './assets/food/F06.webp',
+  './assets/food/F07.webp',
+  './assets/food/F08.webp',
+  './assets/food/F09.webp',
+  './assets/food/F10.webp',
+  './assets/food/F11.webp',
+  './assets/food/F12.webp',
+  './assets/food/F13.webp',
+  './assets/food/F14.webp',
+  './assets/food/F15.webp',
+  './assets/food/F16.webp',
+  './assets/food/T01.webp',
+  './assets/food/T02.webp',
+  './assets/food/T03.webp',
+  './assets/food/T04.webp',
+  './assets/characters/kuri/act/kuri_act_hold.webp',
+  './assets/characters/kuri/act/kuri_act_hold_front.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
