@@ -657,7 +657,7 @@ function drawSpeech(p, now){
 /* =====================================================================
    森林背景（暫代：程式繪製；之後換成 ChatGPT 生成的 assets/backgrounds/bg_forest_{day|dusk|night}.webp）
    ===================================================================== */
-const ART_BG = [ /* 'day', 'dusk', 'night' */ ];   // 有正式背景圖後登記
+const ART_BG = ['day', 'dusk', 'night'];   // 森林背景 v1（2026-11-25 定稿，ChatGPT 生成）
 const BG = {};
 for (const k of ART_BG){ const img = new Image(); img.onload = () => { BG[k] = img; }; img.src = `assets/backgrounds/bg_forest_${k}.webp`; }
 function skyPhase(h){ return h >= 7 && h < 17 ? 'day' : h >= 17 && h < 19.5 ? 'dusk' : 'night'; }
@@ -1102,7 +1102,7 @@ function frame(now){
   if (mg){ mg.kind === 'catch' ? drawCatch(now) : drawGuess(now); }
   else {
     drawForest(now); drawPoops(now); drawPet(pet, now); drawFx(pet, now); drawSpeech(pet, now);
-    if (G.sleeping){ ctx.fillStyle = 'rgba(20,30,70,.28)'; ctx.fillRect(0, 0, W, H); }
+    if (G.sleeping){ ctx.fillStyle = `rgba(20,30,70,${BG.night && skyPhase(hourOf(G.t)) === 'night' ? .12 : .28})`; ctx.fillRect(0, 0, W, H); }
     if (needsCall()){ const k = 1 + sin(now / 160) * .08; ctx.save(); ctx.translate(W - 26, 26); ctx.scale(k, k); ell(0, 0, 16, 16); fs('rgba(255,255,255,.92)', '#E2A13A', 2); emoji('🔔', 0, 1, 17); ctx.restore(); }
     const fl = (now - flashAt) / 1000; if (fl < 1.2){ ctx.fillStyle = `rgba(255,255,240,${(1 - fl / 1.2) * .8})`; ctx.fillRect(0, 0, W, H); }
   }

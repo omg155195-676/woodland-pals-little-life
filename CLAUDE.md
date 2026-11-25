@@ -12,8 +12,8 @@ https://omg155195-676.github.io/woodland-pals-little-life/
 - `sw.js`：離線快取。**任何檔案改動後都要把 `VERSION` 加一**（例如 `wp-life-v1` → `wp-life-v2`），新增的素材也要加進 `CORE` 清單
 - `manifest.webmanifest`、`icons/`：PWA 安裝設定與 App 圖示（目前圖示是暫代版）
 - `assets/characters/{型態}/face/`：表情圖；目前幼年四角色的表情用 LINE 日常表情貼（暫代）
-- `assets/characters/{型態}/act/{型態}_act_{idle|eat|sleep|play|sick}.webp`：正式動作圖（尚未製作）。新增後要登記在 `index.html` 的 `ART_ACTS`
-- `assets/backgrounds/bg_forest_{day|dusk|night}.webp`：正式背景（尚未製作）。新增後登記在 `ART_BG`
+- `assets/characters/{型態}/act/{型態}_act_{idle|eat|sleep|play|sick}.webp`：正式動作圖（蛋、寶寶、四隻幼年已完成；成年型尚未製作）。新增後要登記在 `index.html` 的 `ART_ACTS`。去背用 `tools/cutout.py`
+- `assets/backgrounds/bg_forest_{day|dusk|night}.webp`：森林背景（已完成），登記在 `ART_BG`
 - `tests/growth.test.mjs`：規則測試，`node --test tests/growth.test.mjs`
 - `tools/simulate.mjs`：平衡模擬（機器人玩家），`node tools/simulate.mjs 2000`
 - `tools/hires.py`：沿用自框架的放大＋去背工具；裁切位置是 mare-freya 的，處理 ChatGPT 圖時要改
