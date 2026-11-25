@@ -1,5 +1,5 @@
 // 離線快取：任何檔案改動後都要把 VERSION 加一（wp-life-v1 → wp-life-v2），新增的素材也要加進 CORE 清單。
-const VERSION = 'wp-life-v7';
+const VERSION = 'wp-life-v8';
 const CORE = [
   './',
   './index.html',
@@ -37,6 +37,17 @@ const CORE = [
   './assets/characters/kuri_r/act/kuri_r_act_idle.webp',
   './assets/characters/kuri_f/act/kuri_f_act_idle.webp',
   './assets/characters/kuri_h/act/kuri_h_act_idle.webp',
+  './assets/characters/sunny_p/act/sunny_p_act_idle.webp',
+  './assets/characters/sunny_r/act/sunny_r_act_idle.webp',
+  './assets/characters/sunny_f/act/sunny_f_act_idle.webp',
+  './assets/characters/sunny_h/act/sunny_h_act_idle.webp',
+  './assets/characters/dodo_p/act/dodo_p_act_idle.webp',
+  './assets/characters/dodo_r/act/dodo_r_act_idle.webp',
+  './assets/characters/dodo_f/act/dodo_f_act_idle.webp',
+  './assets/characters/dodo_h/act/dodo_h_act_idle.webp',
+  './assets/characters/piko_p/act/piko_p_act_idle.webp',
+  './assets/characters/piko_r/act/piko_r_act_idle.webp',
+  './assets/characters/piko_f/act/piko_f_act_idle.webp',
   './assets/characters/dodo/face/dodo_face_hug.webp',
   './assets/characters/dodo/face/dodo_face_hungry.webp',
   './assets/characters/dodo/face/dodo_face_ok.webp',

@@ -109,18 +109,18 @@
 | A-KU-2 | KURI | 規律 | 小園丁 / Garden Keeper | ✅ 定稿：提綠色小澆水壺（取消草帽：兩件配件違反「只加一件」，也會擋到耳朵） |
 | A-KU-3 | KURI | 美食 | 胡蘿蔔甜點師 / Carrot Baker | ✅ 定稿：雙手捧胡蘿蔔蛋糕（取消圍裙，同上） |
 | A-KU-H | KURI | 隱藏 | 四葉草 KURI / Lucky Clover | ✅ 定稿：葉子領巾變四葉草；閃光由程式加 |
-| A-SU-1 | SUNNY | 玩樂 | 晨光探險家 / Sunrise Ranger | 戴探險帽、背小望遠鏡 |
-| A-SU-2 | SUNNY | 規律 | 晨間小隊長 / Morning Captain | 胸前小哨子，挺胸站姿 |
-| A-SU-3 | SUNNY | 美食 | 莓果野餐家 / Berry Picnicker | 提野餐籃，裡面裝莓果 |
-| A-SU-H | SUNNY | 隱藏 | 彩虹尾 SUNNY / Rainbow Tail | 尾巴鋸齒白尖帶淡彩虹光，領巾太陽發光 |
-| A-DO-1 | DODO | 玩樂 | 橡實滾球王 / Acorn Roller | 頭綁運動頭帶，大橡實當球 |
-| A-DO-2 | DODO | 規律 | 暖暖守護熊 / Cozy Guardian | 披小毛毯，張開雙臂要抱抱 |
-| A-DO-3 | DODO | 美食 | 蜂蜜大廚 / Honey Chef | 廚師帽，抱蜂蜜罐 |
-| A-DO-H | DODO | 隱藏 | 大橡樹 DODO / Old Oak | 頭上長出小橡樹枝與葉子，橡實變金色 |
-| A-PI-1 | PIKO | 玩樂 | 森林小偵探 / Forest Detective | 偵探帽，放大鏡照地上腳印 |
-| A-PI-2 | PIKO | 規律 | 小小發明家 / Little Tinker | 護目鏡拉下戴好，手拿小扳手 |
-| A-PI-3 | PIKO | 美食 | 菇菇博士 / Mushroom Scholar | 抱一本小書和一朵大菇菇 |
-| A-PI-H | PIKO | 隱藏 | 星空觀測家 / Star Gazer | 護目鏡鏡片映出星星，放大鏡變小望遠鏡 |
+| A-SU-1 | SUNNY | 玩樂 | 晨光探險家 / Sunrise Ranger | ✅ 定稿：舉著小黃望遠鏡（取消探險帽：會擋耳朵與瀏海） |
+| A-SU-2 | SUNNY | 規律 | 晨間小隊長 / Morning Captain | ✅ 定稿：舉著太陽三角小旗（哨子太小，縮小後看不見） |
+| A-SU-3 | SUNNY | 美食 | 莓果野餐家 / Berry Picnicker | ✅ 定稿：提著裝滿莓果的野餐籃 |
+| A-SU-H | SUNNY | 隱藏 | 彩虹尾 SUNNY / Rainbow Tail | ✅ 定稿：白色鋸齒尾尖變彩虹色；閃光由程式加 |
+| A-DO-1 | DODO | 玩樂 | 橡實滾球王 / Acorn Roller | ✅ 定稿：紅色運動頭帶、握拳（取消橡實球，只留一件） |
+| A-DO-2 | DODO | 規律 | 暖暖守護熊 / Cozy Guardian | ✅ 定稿：格紋小毛毯披風、張開雙臂（第一版臉像狐狸，已修正） |
+| A-DO-3 | DODO | 美食 | 蜂蜜大廚 / Honey Chef | ✅ 定稿：白色廚師帽（取消蜂蜜罐：吃東西圖已有） |
+| A-DO-H | DODO | 隱藏 | 大橡樹 DODO / Old Oak | ✅ 定稿：頭頂捲毛長出小橡樹苗、抱著金色橡實 |
+| A-PI-1 | PIKO | 玩樂 | 森林小偵探 / Forest Detective | ✅ 定稿：格紋偵探帽（護目鏡推在帽緣）＋原本的放大鏡 |
+| A-PI-2 | PIKO | 規律 | 小小發明家 / Little Tinker | ✅ 定稿：拿小扳手（護目鏡不拉下來，維持核心特徵） |
+| A-PI-3 | PIKO | 美食 | 菇菇博士 / Mushroom Scholar | ✅ 定稿：抱著封面有香菇的大書 |
+| A-PI-H | PIKO | 隱藏 | 星空觀測家 / Star Gazer | ⏳ 已在 ChatGPT 生成，待擷取：放大鏡變金色星空望遠鏡、護目鏡映星星 |
 
 > 中英文暫名先用於開發；外觀在生圖階段逐一給使用者看過才定稿。
 
