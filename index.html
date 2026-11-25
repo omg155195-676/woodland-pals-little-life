@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EAF4DC">
+<meta name="description" content="Woodland Pals 森林好朋友電子寵物">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Little Life">
+<style>*,*::before,*::after{box-sizing:border-box}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Woodland Pals: Little Life</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<style>
+/* 版面：手機直式單欄 — 標題 → 狀態列 → 森林畫面 → 八個功能按鈕。單一暖色主題（像一台橡實色的電子雞機身）。 */
+:root{
+  color-scheme: light;
+  --bg:#EAF4DC;          /* 機身：嫩葉綠 */
+  --panel:#FFFDF6;
+  --ink:#4A3423;         /* 文字：深橡實棕 */
+  --muted:#8A7560;
+  --hair:#D9E6C4;
+  --main:#C98A3E;        /* 橡實金棕 */
+  --main-soft:#F6E7CF;
+  --leaf:#7BB661;
+  --low:#D5544E;
+  --font:"Huninn","PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
+  --r:16px;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;-webkit-tap-highlight-color:transparent}
+.app{max-width:470px;margin:0 auto;padding-block:10px 18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand h1{margin:0;font-size:20px;font-weight:400;letter-spacing:.02em}
+.brand h1 small{color:var(--muted);font-size:13px;margin-left:4px}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.icon-btn{border:1px solid var(--hair);background:var(--panel);color:var(--ink);border-radius:999px;height:36px;padding:0 14px;font:inherit;font-size:13px;cursor:pointer}
+.icon-btn:focus-visible,.act:focus-visible,.opt:focus-visible,.tab:focus-visible{outline:3px solid var(--main);outline-offset:2px}
+
+.status{background:var(--panel);border-radius:var(--r);padding:8px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center}
+.status .who{font-size:15px}
+.status .chip{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--main-soft);white-space:nowrap;justify-self:end}
+.status .chip.warn{background:var(--low);color:#fff}
+.hearts{display:flex;gap:14px;grid-column:1/-1;font-size:12px;color:var(--muted)}
+.hearts span{display:flex;align-items:center;gap:4px}
+.hearts b{font-weight:400;letter-spacing:1px;font-size:14px}
+
+.stage-wrap{position:relative;border-radius:22px;overflow:hidden;background:#CFE8F5;box-shadow:0 0 0 2px var(--hair),0 8px 22px -12px rgba(70,90,40,.45)}
+@media (max-width:520px){.stage-wrap{margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));border-radius:0;box-shadow:none}}
+#stage{display:block;width:100%;height:auto;aspect-ratio:480/320;max-width:100%;touch-action:manipulation;cursor:pointer}
+.hint{position:absolute;left:10px;bottom:8px;font-size:11px;color:var(--ink);background:rgba(255,253,246,.85);padding:3px 9px;border-radius:999px;pointer-events:none}
+
+.actions{background:var(--panel);border-radius:var(--r);padding:10px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.act{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--hair);border-radius:14px;padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-width:0;transition:transform .08s, background .15s;position:relative}
+.act:active{transform:scale(.96)}
+.act .ic{font-size:24px;line-height:1}
+.act .lb{font-size:12.5px;white-space:nowrap}
+.act .sub{font-size:10px;color:var(--muted);white-space:nowrap}
+.act[disabled]{opacity:.45;cursor:default}
+.act.alert::after{content:'';position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--low)}
+
+.sheet{position:fixed;inset:0;background:rgba(74,52,35,.35);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet-body{background:var(--panel);width:100%;max-width:470px;border-radius:22px 22px 0 0;padding-block:16px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px;max-height:82vh;overflow:auto}
+.sheet h2{margin:0;font-size:17px;font-weight:400}
+.sheet p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.6}
+.tabs{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:999px;align-self:flex-start}
+.tab{border:0;background:transparent;font:inherit;font-size:13px;color:var(--muted);padding:5px 14px;border-radius:999px;cursor:pointer}
+.tab[aria-selected=true]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(70,90,40,.2)}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opt{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--hair);border-radius:14px;padding:10px;text-align:left;cursor:pointer;display:flex;gap:10px;align-items:center;min-width:0}
+.opt .ic{font-size:26px}
+.opt .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt .t small{color:var(--muted);font-size:11px}
+.opt[aria-pressed=true]{border-color:var(--main);background:var(--main-soft)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg .opt{flex:1;justify-content:center;text-align:center;min-width:60px}
+.close{align-self:stretch;font:inherit;border:0;background:var(--ink);color:var(--panel);border-radius:14px;padding:11px;cursor:pointer}
+.danger{font:inherit;border:1px solid var(--low);background:transparent;color:var(--low);border-radius:14px;padding:10px;cursor:pointer}
+.plain{font:inherit;border:1px solid var(--hair);background:var(--bg);color:var(--ink);border-radius:14px;padding:10px;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:9px 16px;border-radius:999px;font-size:13px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+.statrow{display:grid;grid-template-columns:5em 1fr;gap:6px 10px;font-size:14px}
+.statrow .k{color:var(--muted)}
+.meter{height:10px;border-radius:6px;background:var(--hair);overflow:hidden;align-self:center}
+.meter b{display:block;height:100%;background:var(--leaf)}
+.dex{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.dex div{background:var(--bg);border-radius:12px;padding:8px 4px;text-align:center;font-size:11px;min-height:70px;display:flex;flex-direction:column;align-items:center;gap:3px;justify-content:center}
+.dex .ic{font-size:24px}
+.dex .no{color:var(--muted)}
+.diary{background:var(--main-soft);border-radius:12px;padding:10px;font-size:13px;line-height:1.6}
+textarea{width:100%;min-height:80px;font:12px monospace;border:1px solid var(--hair);border-radius:10px;padding:8px}
+@media (prefers-reduced-motion: reduce){.act{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Woodland Pals<small>Little Life</small></h1>
+      <p id="clock">　</p>
+    </div>
+    <button class="icon-btn" id="btnSettings" type="button">設定</button>
+  </header>
+
+  <section class="status" aria-label="寵物狀態" id="status">
+    <span class="who" id="who"></span><span></span><span class="chip" id="chip"></span>
+    <div class="hearts"><span>飽足 <b id="hHunger"></b></span><span>心情 <b id="hMood"></b></span></div>
+  </section>
+
+  <div class="stage-wrap">
+    <canvas id="stage" width="480" height="320" aria-label="森林畫面。點寵物可以摸摸。"></canvas>
+    <div class="hint" id="hint">點寵物可以摸摸</div>
+  </div>
+
+  <section class="actions" id="actions" aria-label="照顧按鈕"></section>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="sheet-body" id="sheetBody"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="growth.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   WOODLAND PALS: Little Life — 遊戲本體
+   以 mare-freya-pet 框架為基礎（畫布、Pet 行為佇列、程式動畫、底部選單、存檔補算、小遊戲）。
+   規則計算都在 growth.js；這裡只放時間推進、照顧循環、畫面與操作。
+   規格：docs/*.md
+   ===================================================================== */
+const Gr = window.Growth;
+const { MIN, HOUR, DAY, T, FOODS, FOOD, FORMS, FORM_ORDER } = Gr;
+const W = 480, H = 320, TAU = Math.PI * 2;
+const { sin, cos, abs, min, max, PI, floor, random, hypot, round } = Math;
+const clamp = (v, a = 0, b = 100) => v < a ? a : v > b ? b : v;
+const rnd = (a, b) => a + random() * (b - a);
+const pick = a => a[floor(random() * a.length)];
+const FONT = '"Huninn","PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif';
+
+/* ---------- 角色配色（README_品牌資產與角色設定） ---------- */
+const CHAR_COLOR = {
+  kuri:  { body:'#FFF6E8', line:'#6B4A2E', accent:'#7BB661', name:'KURI' },
+  sunny: { body:'#F39A3D', line:'#7A4A1E', accent:'#F7D23E', name:'SUNNY' },
+  dodo:  { body:'#B5824F', line:'#5A3A1E', accent:'#E0603A', name:'DODO' },
+  piko:  { body:'#D9B48A', line:'#5A3E22', accent:'#E8B53A', name:'PIKO' },
+};
+const CAT_TINT = { G:'#6FB34F', S:'#F3A13A', H:'#B5824F', C:'#B07ACF' };
+
+/* ---------- 台詞 ---------- */
+const LINES = {
+  greet: ['你回來了！', '嗨～今天也一起玩！'], miss: ['好想你喔！', '你終於回來了～'],
+  hungry: ['肚子餓了…', '想吃東西～'], fed: ['好好吃！', '嗯嗯～謝謝！', '吃飽飽！'], fav: ['這個最好吃了！', '是我最愛的！'],
+  full: ['吃不下了啦～', '肚子好撐…'], refuse: ['哼～不要！', '不想吃～'], treat: ['甜甜的！', '點心萬歲！'],
+  pat: ['嘿嘿～', '好舒服～', '再摸一下！'], sleepy: ['好睏喔…'], night: ['晚安～', '做個好夢…'], wake: ['早安！', '睡飽了～'],
+  sick: ['不舒服…', '哈啾！'], cured: ['好了！謝謝你！'], notSick: ['我沒有生病喔！'], medicine: ['苦苦的…'],
+  scolded: ['知道了～', '對不起…'], notNeeded: ['咦？我做錯什麼了嗎？'], fake: ['陪我嘛～', '看我看我！'],
+  dirty: ['有便便…'], cleaned: ['乾淨了！'], noPlay: ['現在不想玩…'], sleepTalk: ['Zzz…', '嗯…好吃…'],
+};
+const line = k => pick(LINES[k] || ['…']);
+
+/* ---------- 畫布 ---------- */
+const cv = document.getElementById('stage');
+const ctx = cv.getContext('2d');
+function resize(){
+  const dpr = min(3, window.devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize(); window.addEventListener('resize', resize);
+function ell(x, y, rx, ry, rot = 0){ ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, TAU); }
+function fs(fill, stroke, lw){ if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 2.6; ctx.stroke(); } }
+function rr(x, y, w, h, r){ ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function emoji(ch, x, y, size){ ctx.font = `${size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, x, y); }
+function txt(s, x, y, size, col, bold = true){
+  ctx.font = `${bold ? '700 ' : ''}${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.strokeText(s, x, y); ctx.fillStyle = col; ctx.fillText(s, x, y);
+}
+
+/* =====================================================================
+   遊戲狀態（存檔內容）
+   ===================================================================== */
+const LS_KEY = 'woodland-pals-life-v1';
+const SAVE_VERSION = 1;
+let G = null;         // 存檔
+let speed = 1;        // 時間流速（開發測試用）
+const newId = () => Date.now().toString(36) + floor(random() * 1e9).toString(36);
+function newGame(collection){
+  const t = Date.now();
+  return {
+    version: SAVE_VERSION, petId: newId(), gen: (G && G.gen || 0) + 1,
+    t,                                  // 遊戲時鐘（毫秒）
+    form: 'egg', stageMin: 0, bornAt: t, hatchAt: null,
+    hunger: 80, mood: 75, discipline: 0,
+    sick: false, sickSince: null, sickMistakeAt: null, medicineTries: 0,
+    sleeping: false, napping: false, sleptAt: null,
+    poops: [], poopDue: null,
+    hidden: { G:0, S:0, H:0, C:0 }, babyMeals: 0,
+    R: Gr.emptyRecords(),               // 幼年期紀錄（第二階段判定用）
+    feedLog: [],                        // 最近 3 小時的餵食（重複倍率、點心肚子痛）
+    zeroHungerSince: null, zeroMoodSince: null, hungerMistake: false, moodMistake: false,
+    fake: null, fakeToday: 0,
+    day: null, dayStats: null, diary: [],
+    collection: collection || [],
+    decisions: [],
+    graceUntil: 0, patLog: [],
+  };
+}
+const stageOf = form => FORMS[form].stage;
+const charOf = form => FORMS[form].char || null;
+const isPet = () => !['egg'].includes(stageOf(G.form));
+const dateKey = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const hourOf = t => { const d = new Date(t); return d.getHours() + d.getMinutes() / 60; };
+const petName = () => FORMS[G.form].stage === 'adult' ? CHAR_COLOR[charOf(G.form)].name : FORMS[G.form].name;
+
+/* =====================================================================
+   時間推進：每「遊戲分鐘」呼叫一次 tickMinute(online)
+   online=false 是離線補算：不產生照顧失誤、不假撒嬌、便便最多 2 坨、數值最低半顆心
+   ===================================================================== */
+function tickMinute(online){
+  G.t += MIN;
+  const st = stageOf(G.form), h = hourOf(G.t);
+  if (st === 'egg'){
+    G.stageMin++;
+    if (G.stageMin >= T.eggMin) hatch();
+    return;
+  }
+  newDayCheck();
+  // ---- 作息 ----
+  if (G.sleeping){
+    if (G.napping && (h >= T.napEnd || h < T.napStart)) { G.sleeping = G.napping = false; if (online) pet.say(line('wake'), 1800); }
+    else if (!G.napping && h >= T.wakeHour && h < T.bedOpenHour) wakeUp(online);
+  } else {
+    if (h >= T.autoSleepHour || h < T.wakeHour) goSleep(false, online);
+    else if (st === 'baby' && h >= T.napStart && h < T.napEnd && !G.sick) { G.sleeping = G.napping = true; }
+  }
+  // ---- 成長計時（生病暫停；睡覺照算）----
+  if (!G.sick) G.stageMin++;
+  growthCheck(online);
+  if (G.sleeping) return;
+
+  // ---- 數值下降 ----
+  const d = Gr.DECAY[st];
+  let moodMul = 1 + .2 * G.poops.length; if (G.sick) moodMul *= 1.5;
+  G.hunger = clamp(G.hunger - d.hunger / 60);
+  G.mood = clamp(G.mood - d.mood / 60 * moodMul);
+  if (!online){ G.hunger = max(G.hunger, 12.5); G.mood = max(G.mood, 12.5); }
+
+  // ---- 便便 ----
+  if (G.poopDue && G.t >= G.poopDue){
+    G.poopDue = null;
+    if (G.poops.length < (online ? 3 : 2)){
+      G.poops.push({ born: G.t, cleanBy: G.t + 30 * MIN, x: rnd(70, 410), y: rnd(250, 296), off: !online });
+      if (st === 'child') G.R.poops++;
+    }
+  }
+  if (online && !G.sick && G.t > G.graceUntil && G.poops.some(p => G.t - p.born > 2 * HOUR)) getSick('poop');
+
+  // ---- 照顧失誤（只在開著遊戲時）----
+  if (online){
+    if (G.hunger <= 0){ G.zeroHungerSince ??= G.t; if (!G.hungerMistake && G.t - G.zeroHungerSince >= 15 * MIN){ G.hungerMistake = true; mistake('餓過頭'); } }
+    else { G.zeroHungerSince = null; G.hungerMistake = false; }
+    if (G.mood <= 0){ G.zeroMoodSince ??= G.t; if (!G.moodMistake && G.t - G.zeroMoodSince >= 15 * MIN){ G.moodMistake = true; mistake('不開心過頭'); } }
+    else { G.zeroMoodSince = null; G.moodMistake = false; }
+    if (G.sick && G.t - (G.sickMistakeAt || G.sickSince) >= HOUR){ G.sickMistakeAt = G.t; mistake('生病沒治'); }
+    // 假撒嬌：一天 2～4 次
+    if (G.fake && G.t > G.fake.until) G.fake = null;
+    if (!G.fake && !G.sick && G.fakeToday < 4 && G.hunger >= 50 && G.mood >= 50 && random() < 3 / 720){
+      G.fake = { until: G.t + 15 * MIN }; G.fakeToday++; pet.run([{ anim:'pout', dur:2600, say: line('fake') }]);
+    }
+    // 心情紀錄（幼年期，醒著、開著遊戲）
+    if (st === 'child'){ G.R.moodSum += G.mood; G.R.moodN++; }
+  }
+}
+function mistake(why){
+  if (stageOf(G.form) === 'child') G.R.mistakes++;
+  G.decisions.push({ t: G.t, type: 'mistake', why });
+}
+function getSick(why){
+  G.sick = true; G.sickSince = G.t; G.sickMistakeAt = null; G.medicineTries = 0;
+  G.sleeping = G.napping = false;
+  pet.run([{ anim:'sick', dur:2400, say: why === 'treat' ? '肚子痛痛…' : line('sick') }]);
+}
+function goSleep(byPlayer, online){
+  G.sleeping = true; G.napping = false; G.sleptAt = G.t; G.fake = null;
+  if (online !== false){ pet.queue = []; pet.cur = null; pet.target = null; pet.say(line('night'), 2200); }
+}
+function wakeUp(online){
+  const early = G.sleptAt && hourOf(G.sleptAt) >= T.bedOpenHour && hourOf(G.sleptAt) < T.autoSleepHour;
+  G.sleeping = G.napping = false; G.sleptAt = null;
+  if (early) G.mood = clamp(G.mood + 12.5);
+  if (online) pet.say(line('wake'), 2000);
+}
+function newDayCheck(){
+  const k = dateKey(G.t);
+  if (G.day === k) return;
+  if (G.day && G.dayStats) writeDiary();
+  G.day = k; G.fakeToday = 0;
+  G.dayStats = { meals:0, treats:0, plays:0, pats:0, cleans:0, cats:{ G:0, S:0, H:0, C:0 } };
+}
+function writeDiary(){
+  const s = G.dayStats, n = petName();
+  let text;
+  if (stageOf(G.form) === 'baby'){
+    const c = Gr.CATS.reduce((a, k) => s.cats[k] > s.cats[a] ? k : a, 'G');
+    text = s.cats[c] ? `昨天${n}最常吃${Gr.CAT_LABEL[c]}的食物，頭上的嫩芽好像動了一下。` : `昨天${n}一直在等你餵它。`;
+  } else {
+    const opts = [[s.plays * 3, `昨天${n}一直想出去跑跳！`], [s.cleans * 2 + s.pats, `昨天${n}乖乖的，身邊整理得很乾淨。`], [s.treats * 3 + s.meals, `昨天${n}吃了好多好吃的東西！`]];
+    opts.sort((a, b) => b[0] - a[0]);
+    text = opts[0][0] ? opts[0][1] : `昨天${n}有點寂寞，好想你陪它。`;
+  }
+  G.diary.unshift({ day: G.day, text }); G.diary.length = min(G.diary.length, 14);
+}
+
+/* ---------- 成長 ---------- */
+function hatch(){
+  G.form = 'baby'; G.stageMin = 0; G.hatchAt = G.t; G.hunger = 60; G.mood = 70;
+  collect('egg'); collect('baby');
+  celebrate('孵出來了！是森林寶寶！');
+}
+function growthCheck(online){
+  const st = stageOf(G.form);
+  if (st === 'baby'){
+    const ready = G.stageMin >= T.babyMin && (G.babyMeals >= T.babyMinMeals || G.stageMin >= T.babyMin + T.babyExtraMax);
+    if (ready){
+      const res = Gr.phase1(G.hidden, G.petId);
+      G.decisions.push({ t: G.t, type: 'phase1', ...res });
+      G.form = res.form; G.stageMin = 0; G.R = Gr.emptyRecords();
+      collect(G.form); celebrate(`長大了！變成 ${CHAR_COLOR[res.form].name} 了！`);
+    }
+  } else if (st === 'child'){
+    if (G.stageMin >= T.childMin && !G.sick){
+      const res = Gr.phase2(charOf(G.form), G.R, G.discipline, G.petId);
+      G.decisions.push({ t: G.t, type: 'phase2', form: res.form, style: res.style, scores: res.scores, metrics: res.metrics, hidden: res.hidden, roll: res.roll, mode: res.mode });
+      G.form = res.form; G.stageMin = 0;
+      collect(G.form); celebrate(FORMS[res.form].hidden ? `哇！變成了特別的「${FORMS[res.form].name}」！` : `成年了！變成「${FORMS[res.form].name}」！`);
+    }
+  }
+}
+function collect(form){ if (!G.collection.includes(form)) G.collection.push(form); }
+let flashAt = 0;
+function celebrate(msg){ flashAt = performance.now(); toast(msg); pet.queue = []; pet.cur = null; pet.run([{ anim:'excited', dur:2600, say: msg }]); playChime(); }
+
+/* =====================================================================
+   寵物行為（框架的 Pet 類別，改成單一寵物）
+   ===================================================================== */
+const FLOOR = { x0:90, x1:390, y0:236, y1:286 };
+let lastInput = performance.now();
+let mg = null;
+class Pet {
+  constructor(){
+    this.x = 240; this.y = 266; this.dir = 1;
+    this.queue = []; this.cur = null; this.target = null;
+    this.anim = 'idle'; this.animStart = performance.now();
+    this.nextThink = performance.now() + rnd(3000, 6000);
+    this.speech = null; this.prop = null;
+  }
+  setAnim(a){ if (this.anim !== a){ this.anim = a; this.animStart = performance.now(); } }
+  say(text, dur = 3000){ this.speech = { text, until: performance.now() + dur }; }
+  run(steps){ this.queue = steps.slice(); this.cur = null; this.target = null; }
+  rest(){ if (stageOf(G.form) === 'egg') return 'egg'; return G.sleeping ? 'sleep' : G.sick ? 'sick' : G.fake ? 'pout' : 'idle'; }
+  busy(){ return !!(this.cur || this.queue.length || this.target); }
+  moveTo(x, y){ this.target = { x, y }; }
+  update(dt, now){
+    if (this.target){
+      const dx = this.target.x - this.x, dy = this.target.y - this.y, d = hypot(dx, dy), sp = 52 * dt;
+      if (abs(dx) > 1) this.dir = dx > 0 ? 1 : -1;
+      if (d <= sp){ this.x = this.target.x; this.y = this.target.y; this.target = null; }
+      else { this.x += dx / d * sp; this.y += dy / d * sp; this.setAnim('walk'); return; }
+    }
+    if (!this.cur && this.queue.length){ const c = this.cur = this.queue.shift(); if (c.to) this.moveTo(c.to.x, c.to.y); c.started = false; return; }
+    if (this.cur){
+      const c = this.cur;
+      if (!c.started){
+        c.started = true; c.t0 = now;
+        if (c.prop !== undefined) this.prop = c.prop;
+        if (c.start) c.start(this);
+        if (c.say) this.say(typeof c.say === 'function' ? c.say(this) : c.say);
+        this.setAnim(c.anim || this.rest());
+      }
+      if (now - c.t0 >= (c.dur || 0)){ if (c.end) c.end(this); this.cur = null; if (!this.queue.length) this.setAnim(this.rest()); }
+      return;
+    }
+    if (this.anim !== this.rest()) this.setAnim(this.rest());
+    think(this, now);
+  }
+}
+const pet = new Pet();
+
+// 自主行為：也是玩家觀察成長傾向的主要管道
+function think(p, now){
+  if (mg || now < p.nextThink) return;
+  p.nextThink = now + rnd(4500, 9000);
+  const st = stageOf(G.form);
+  if (st === 'egg') return;
+  if (G.sleeping){ if (random() < .15) p.say(line('sleepTalk'), 1800); return; }
+  if (G.sick){ if (random() < .35) p.say(line('sick')); return; }
+  if (G.fake) return;
+  if (G.hunger < 25 && random() < .6){ p.run([{ anim:'sad', dur:2400, say: line('hungry') }]); return; }
+  if (G.poops.length && random() < .4){ p.run([{ anim:'pout', dur:2200, say: line('dirty') }]); return; }
+  const h = hourOf(G.t);
+  if (h >= T.bedOpenHour && random() < .3){ p.run([{ anim:'tired', dur:2400, say: line('sleepy') }]); return; }
+  // 傾向提示
+  if (st === 'child'){
+    const lead = Gr.childHint(G.R, G.discipline);
+    if (lead && random() < .45){
+      if (lead === 'P') p.run([{ to: { x: rnd(FLOOR.x0, FLOOR.x1), y: rnd(FLOOR.y0, FLOOR.y1) }, dur:0 }, { anim:'happy', dur:2000 }]);
+      else if (lead === 'R') p.run([{ anim:'groom', dur:2600 }]);
+      else p.run([{ anim:'sniff', dur:2600 }]);
+      return;
+    }
+    const hc = Gr.hiddenCheck(charOf(G.form), G.R, G.discipline);
+    if (hc.count >= 2 && random() < .25){ p.run([{ anim:'sparkle', dur:2000 }]); return; }
+  }
+  const r = random();
+  if (r < .45) p.run([{ to: { x: rnd(FLOOR.x0, FLOOR.x1), y: rnd(FLOOR.y0, FLOOR.y1) }, dur:0 }]);
+  else if (r < .6 && G.mood > 65) p.run([{ anim:'happy', dur:1800 }]);
+  else if (r < .7) p.run([{ anim:'look', dur:2600 }]);
+}
+
+/* =====================================================================
+   程式動畫（每個動作一張圖，動作感用程式做）
+   ===================================================================== */
+function animState(p, t){
+  const s = { bob:0, sway:0, squash:0, face:'normal', fx:null, lie:false };
+  switch (p.anim){
+    case 'egg': { const c = t % 3; s.sway = c < .6 ? sin(c * 20) * .12 : 0; break; }
+    case 'idle': s.bob = sin(t * 2.6) * 1.4; s.sway = sin(t * 1.3) * .03; break;
+    case 'walk': s.bob = abs(sin(t * 10)) * 4; s.sway = sin(t * 10) * .05; break;
+    case 'happy': { const c = t % 1.4; s.bob = c < 1 ? abs(sin(c / .5 * PI)) * 14 : 0; s.face = 'happy'; s.fx = 'note'; break; }
+    case 'excited': { const c = t % 1.2; s.bob = c < 1 ? abs(sin(c / .5 * PI)) * 18 : 0; s.face = 'happy'; s.fx = 'sparkle'; break; }
+    case 'sad': s.bob = -2; s.face = 'sad'; s.fx = 'gloom'; break;
+    case 'pout': s.sway = sin(t * 2.2) * .06; s.face = 'refuse'; s.fx = 'call'; break;
+    case 'tired': s.bob = -3 + sin(t * 1.2); s.face = 'sleepy'; s.fx = 'zz'; break;
+    case 'sleep': s.lie = true; s.bob = sin(t * 1.6) * .8; s.face = 'sleepy'; s.fx = 'zzz'; break;
+    case 'eat': s.bob = sin(t * 7) * 1.2; s.face = 'eat'; s.fx = t % 2 < 1 ? 'heart' : null; break;
+    case 'refuse': s.sway = sin(t * 14) * .08; s.face = 'refuse'; break;
+    case 'headpat': s.squash = .05 + sin(t * 7) * .02; s.face = 'pat'; s.fx = 'heart'; break;
+    case 'sick': s.sway = sin(t) * .04; s.face = 'sick'; s.fx = 'sneeze'; break;
+    case 'medicine': s.squash = sin(t * 9) * .03; s.face = 'sad'; s.fx = 'sweat'; break;
+    case 'scolded': s.bob = -3; s.face = 'sad'; s.fx = 'sweat'; break;
+    case 'confused': s.sway = .12; s.face = 'surprised'; s.fx = 'question'; break;
+    case 'groom': s.sway = sin(t * 2.5) * .05; s.face = 'happy'; s.fx = 'sparkle'; break;
+    case 'sniff': s.bob = abs(sin(t * 6)) * 2; s.face = 'eat'; s.fx = 'smell'; break;
+    case 'sparkle': s.bob = sin(t * 3) * 2; s.face = 'happy'; s.fx = 'sparkle'; break;
+    case 'look': s.sway = sin(t * .9) * .1; s.face = 'normal'; break;
+    case 'mg_run': s.bob = abs(sin(t * 12)) * 3; s.face = 'happy'; break;
+    case 'surprised': s.bob = t < .35 ? sin(t / .35 * PI) * 14 : 0; s.face = 'surprised'; s.fx = 'bang'; break;
+  }
+  if (p.anim === 'idle' || p.anim === 'walk' || p.anim === 'look'){
+    if (G.mood < 25) s.face = 'sad'; else if (G.mood > 70) s.face = 'happy';
+  }
+  return s;
+}
+
+/* ---------- 角色圖（有圖用圖，沒有就用暫代畫法） ---------- */
+// 暫代：幼年與成年用 LINE 日常表情貼的大頭；正式圖完成後放進 assets/characters/{型態}/act/
+const FACE_FILES = {
+  kuri:  { normal:'shy', happy:'laugh', pat:'love', sad:'cry', sleepy:'sleepy', eat:'love', surprised:'laugh', sick:'cry', refuse:'cry' },
+  sunny: { normal:'wink', happy:'stareyes', pat:'wink', sad:'confused', sleepy:'confused', eat:'stareyes', surprised:'shock', sick:'confused', refuse:'angry' },
+  dodo:  { normal:'smile', happy:'hug', pat:'hug', sad:'sad', sleepy:'sweat', eat:'hungry', surprised:'ok', sick:'sad', refuse:'sweat' },
+  piko:  { normal:'think', happy:'laughcry', pat:'giggle', sad:'speechless', sleepy:'speechless', eat:'giggle', surprised:'surprised', sick:'speechless', refuse:'hmph' },
+};
+const IMG = {};
+for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(FACE_FILES[ch]))){
+  const img = new Image(); img.onload = () => { IMG[`${ch}_face_${n}`] = img; }; img.src = `assets/characters/${ch}/face/${ch}_face_${n}.webp`;
+}
+// 正式動作圖（由 ChatGPT 生成）：assets/characters/{form}/act/{form}_act_{動作}.webp
+// 新增圖片後，把型態和動作登記在這裡（沒登記的不會去載入），並加進 sw.js 的 CORE 清單。
+const ART_ACTS = {
+  // kuri: ['idle', 'eat', 'sleep', 'play', 'sick'],
+};
+for (const [f, acts] of Object.entries(ART_ACTS)) for (const a of acts){
+  const img = new Image(); img.onload = () => { IMG[`${f}_act_${a}`] = img; }; img.src = `assets/characters/${f}/act/${f}_act_${a}.webp`;
+}
+function actFor(anim){
+  if (anim === 'sleep') return 'sleep';
+  if (anim === 'eat' || anim === 'sniff') return 'eat';
+  if (anim === 'sick' || anim === 'medicine') return 'sick';
+  if (anim === 'mg_run' || anim === 'happy' || anim === 'excited') return 'play';
+  return 'idle';
+}
+
+function drawPet(p, now){
+  const t = (now - p.animStart) / 1000, s = animState(p, t);
+  p._s = s;
+  const st = stageOf(G.form), f = G.form;
+  const scale = st === 'adult' ? 1.18 : st === 'child' ? 1 : st === 'baby' ? .8 : .85;
+  // 影子
+  ell(p.x, p.y, 34 * scale * (1 - s.bob / 70), 6); ctx.fillStyle = 'rgba(60,80,30,.18)'; ctx.fill();
+  ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(s.sway); ctx.translate(0, -s.bob);
+  if (s.squash) ctx.scale(1 + s.squash, 1 - s.squash);
+  const img = IMG[`${f}_act_${actFor(p.anim)}`] || IMG[`${f}_act_idle`];
+  let hgt = 0;
+  if (img){
+    hgt = 118 * scale; const w = img.width * hgt / img.height;
+    if (p.dir < 0) ctx.scale(-1, 1);
+    ctx.drawImage(img, -w / 2, -hgt, w, hgt);
+  } else if (st === 'egg') hgt = drawEgg(now);
+  else if (st === 'baby') hgt = drawBaby(s, now);
+  else hgt = drawHead(charOf(f), s, scale, st === 'adult' ? FORMS[f] : null, now);
+  ctx.restore();
+  p._top = p.y - hgt - s.bob; p._h = hgt;
+  if (G.sleeping && st !== 'egg' && !mg) drawBlanket(p, scale);
+}
+function drawEgg(now){
+  // 暫代：橡實蛋（之後換成 ChatGPT 正式圖）
+  ell(0, -40, 34, 40); fs('#D9A05B', '#7A4E22', 3);
+  ell(-10, -52, 8, 14, -.3); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, -74, 38, 18, 0, PI, TAU); ctx.closePath(); fs('#8A5A2B', '#5A3818', 3);
+  ctx.strokeStyle = 'rgba(60,35,15,.45)'; ctx.lineWidth = 1.5;
+  for (let i = -3; i <= 3; i++){ ctx.beginPath(); ctx.moveTo(i * 10 - 6, -88); ctx.lineTo(i * 10 + 6, -74); ctx.stroke(); }
+  ctx.beginPath(); ctx.moveTo(0, -90); ctx.quadraticCurveTo(4, -104, 14, -106); ctx.strokeStyle = '#5E9E45'; ctx.lineWidth = 3; ctx.stroke();
+  ell(16, -106, 8, 4.5, -.4); fs('#7BB661', '#4E8A36', 1.6);
+  const left = max(0, T.eggMin - G.stageMin);
+  if (left <= 1){ ctx.strokeStyle = '#5A3818'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-18, -40); ctx.lineTo(-8, -34); ctx.lineTo(0, -44); ctx.lineTo(10, -36); ctx.stroke(); }
+  return 108;
+}
+function drawBaby(s, now){
+  // 暫代：森林寶寶（奶油色毛球＋橡實帽＋嫩芽；嫩芽依飲食傾向變化）
+  const hint = Gr.babyHint(G.hidden), t = now / 1000;
+  const show = hint.level === 2 || (hint.level === 1 && (t % 6) < 1.5);
+  ell(0, -34, 36, 33); fs('#FFF3DC', '#8A6440', 3);
+  ell(-18, -26, 7, 4.5); ctx.fillStyle = 'rgba(244,150,150,.55)'; ctx.fill(); ell(18, -26, 7, 4.5); ctx.fill();
+  const closed = G.sleeping || s.face === 'sleepy';
+  if (closed){ ctx.strokeStyle = '#4A3423'; ctx.lineWidth = 2.4; for (const x of [-11, 11]){ ctx.beginPath(); ctx.arc(x, -36, 5, .2, PI - .2); ctx.stroke(); } }
+  else for (const x of [-11, 11]){ ell(x, -37, 5.5, 7); fs('#3A2A1E'); ell(x + 1.8, -40, 2, 2.4); fs('#FFFFFF'); }
+  if (s.face === 'sad' || s.face === 'sick' || s.face === 'refuse'){ ctx.beginPath(); ctx.arc(0, -20, 4, PI + .3, TAU - .3); ctx.strokeStyle = '#4A3423'; ctx.lineWidth = 2; ctx.stroke(); }
+  else { ctx.beginPath(); ctx.arc(0, -25, 4, .3, PI - .3); ctx.strokeStyle = '#4A3423'; ctx.lineWidth = 2; ctx.stroke(); }
+  ctx.beginPath(); ctx.ellipse(0, -62, 26, 12, 0, PI, TAU); ctx.closePath(); fs('#8A5A2B', '#5A3818', 2.6);
+  // 嫩芽
+  const col = show ? CAT_TINT[hint.cat] : '#7BB661';
+  ctx.beginPath(); ctx.moveTo(0, -74); ctx.quadraticCurveTo(2, -86, 8, -90); ctx.strokeStyle = '#5E9E45'; ctx.lineWidth = 2.6; ctx.stroke();
+  if (show && hint.cat === 'C'){ ctx.beginPath(); for (let i = 0; i <= 6; i++){ const a = i / 6 * PI; ctx.lineTo(10 + cos(a) * (i % 2 ? 6 : 10), -91 - sin(a) * (i % 2 ? 4 : 7)); } ctx.closePath(); fs(col, '#4E8A36', 1.4); }
+  else { ell(11, -91, 9, 5, -.4); fs(col, '#4E8A36', 1.4); }
+  if (show && hint.cat === 'S'){ ell(19, -95, 3, 3); fs('#FFE27A'); }
+  if (show && hint.cat === 'H'){ ctx.beginPath(); ctx.arc(-6, -80, 4, 0, PI * 1.6); ctx.strokeStyle = '#8A5A2B'; ctx.lineWidth = 2; ctx.stroke(); }
+  return 96;
+}
+function drawHead(ch, s, scale, adultForm, now){
+  const key = FACE_FILES[ch][G.sleeping ? 'sleepy' : s.face] || FACE_FILES[ch].normal;
+  const img = IMG[`${ch}_face_${key}`];
+  const size = 104 * scale;
+  if (img){ ctx.drawImage(img, -size / 2, -size, size, size); }
+  else { ell(0, -size / 2, size / 2.2, size / 2.2); fs(CHAR_COLOR[ch].body, CHAR_COLOR[ch].line, 3); }
+  if (adultForm){
+    const t = now / 1000;
+    rr(size * .18, -size * .42, 34, 34, 17); fs('rgba(255,255,255,.92)', CHAR_COLOR[ch].accent, 2.4);
+    emoji(adultForm.badge, size * .18 + 17, -size * .42 + 18, 20);
+    if (adultForm.hidden) for (let i = 0; i < 3; i++){ const a = t * 1.4 + i * 2.1; ctx.globalAlpha = .5 + .5 * sin(t * 4 + i); txt('✦', cos(a) * size * .62, -size * .55 + sin(a) * size * .3, 13, '#F2B33D'); ctx.globalAlpha = 1; }
+  }
+  return size;
+}
+function drawBlanket(p, scale){
+  const w = 96 * scale, x = p.x - w / 2, y = p.y - 34 * scale;
+  rr(x, y, w, 36 * scale, 14); fs('#9CCB7E', '#5E8E45', 2);
+  ctx.fillStyle = 'rgba(255,255,255,.55)'; for (let i = 0; i < 5; i++){ ell(x + 14 + i * w / 5.4, y + 14 * scale, 3, 2); ctx.fill(); }
+}
+
+/* ---------- 頭頂符號與對話框 ---------- */
+const headPt = p => ({ x: p.x, y: (p._top ?? p.y - 110) + 6 });
+function drawFx(p, now){
+  const s = p._s; if (!s) return;
+  const { x, y } = headPt(p), t = now / 1000;
+  let fx = s.fx;
+  if (G.sleeping && stageOf(G.form) !== 'egg') fx = 'zzz';
+  switch (fx){
+    case 'zzz': for (let i = 0; i < 3; i++){ const c = (t * .6 + i / 3) % 1; ctx.globalAlpha = 1 - c; txt('Z', x + 26 + c * 22, y - c * 30, 12 + i * 3, '#6E7CC0'); } ctx.globalAlpha = 1; break;
+    case 'zz': { const c = (t * .5) % 1; ctx.globalAlpha = 1 - c; txt('z', x + 30, y + 8 - c * 16, 13, '#6E7CC0'); ctx.globalAlpha = 1; break; }
+    case 'note': txt('♪', x + 34 + sin(t * 3) * 3, y + 4 - abs(sin(t * 2)) * 8, 20, '#E07A92'); txt('♫', x - 36, y + 10 - abs(sin(t * 2 + 1)) * 6, 16, '#E2A13A'); break;
+    case 'heart': for (let i = 0; i < 2; i++){ const c = (t * .7 + i * .5) % 1; ctx.globalAlpha = 1 - c * .8; txt('♥', x + (i ? 30 : -28), y + 6 - c * 26, 16 + i * 3, '#EE5C7E'); } ctx.globalAlpha = 1; break;
+    case 'bang': txt('!', x + 4, y - 6 - abs(sin(t * 8)) * 3, 26, '#E2453C'); break;
+    case 'question': txt('?', x + 32, y + 2 + sin(t * 3) * 3, 22, '#6C7FD8'); break;
+    case 'call': txt('!', x + 34, y + 2 - abs(sin(t * 6)) * 4, 22, '#E2453C'); break;
+    case 'gloom': ctx.strokeStyle = 'rgba(120,100,180,.8)'; ctx.lineWidth = 2; for (let i = -1; i <= 1; i++){ ctx.beginPath(); ctx.moveTo(x + i * 12, y + 4); for (let k = 1; k <= 4; k++) ctx.lineTo(x + i * 12 + (k % 2 ? 3 : -3), y + 4 - k * 5); ctx.stroke(); } break;
+    case 'sweat': { const sx = x + 36, sy = y + 22 + (t % 1.4) * 6; ctx.beginPath(); ctx.moveTo(sx, sy - 7); ctx.quadraticCurveTo(sx + 5, sy, sx, sy + 3); ctx.quadraticCurveTo(sx - 5, sy, sx, sy - 7); fs('#9FD4F2', '#5A9CC2', 1.4); break; }
+    case 'sparkle': for (let i = 0; i < 3; i++){ const a = t * 1.5 + i * 2.1; ctx.globalAlpha = .5 + .5 * sin(t * 5 + i); txt('✦', x + cos(a) * 40, y + 30 + sin(a) * 16, 12 + (i % 2) * 4, '#F2B33D'); } ctx.globalAlpha = 1; break;
+    case 'smell': for (let i = 0; i < 3; i++){ const c = (t * .8 + i / 3) % 1; ctx.globalAlpha = 1 - c; txt('~', x - 20 + i * 18, y - c * 20, 16, '#C98A3E'); } ctx.globalAlpha = 1; break;
+    case 'sneeze': { ell(x + 38, y + 4, 16, 10); fs('rgba(255,255,255,.95)', '#9AA4B0', 1.6); emoji('💦', x + 38, y + 4, 12); break; }
+  }
+  // 睡覺時的夢泡泡（寶寶：傾向很明顯時夢到食物；幼年：隱藏條件全達成時做特別的夢）
+  if (G.sleeping && !mg){
+    let dream = null;
+    if (stageOf(G.form) === 'baby'){ const h = Gr.babyHint(G.hidden); if (h.level === 2) dream = FOODS.find(f => f.cat === h.cat).icon; }
+    if (stageOf(G.form) === 'child' && Gr.hiddenCheck(charOf(G.form), G.R, G.discipline).all) dream = '✨';
+    if (dream && (t % 8) < 5){ ell(x - 44, y - 14, 18, 15); fs('rgba(255,255,255,.92)', '#B9C3D0', 1.5); ell(x - 24, y + 4, 4, 4); fs('rgba(255,255,255,.92)', '#B9C3D0', 1.2); emoji(dream, x - 44, y - 14, 17); }
+  }
+}
+function wrapText(s, maxW){ ctx.font = `14px ${FONT}`; const out = []; let cur = ''; for (const ch of s){ if (ctx.measureText(cur + ch).width > maxW && cur){ out.push(cur); cur = ch; } else cur += ch; } if (cur) out.push(cur); return out; }
+function drawSpeech(p, now){
+  if (!p.speech || now > p.speech.until) return;
+  const { x, y } = headPt(p), lines = wrapText(p.speech.text, 170);
+  ctx.font = `14px ${FONT}`;
+  const w = max(...lines.map(l => ctx.measureText(l).width)) + 22, h = lines.length * 19 + 12;
+  const bx = clamp(x - w / 2, 6, W - w - 6), by = max(6, y - h - 18);
+  ctx.globalAlpha = min(1, (p.speech.until - now) / 300);
+  rr(bx, by, w, h, 12); fs('#FFFFFF', '#C98A3E', 2);
+  ctx.beginPath(); const tx = clamp(x, bx + 14, bx + w - 14); ctx.moveTo(tx - 6, by + h - 1); ctx.lineTo(tx, by + h + 9); ctx.lineTo(tx + 6, by + h - 1); ctx.closePath(); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.strokeStyle = '#C98A3E'; ctx.stroke();
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(tx - 5, by + h - 3, 10, 3);
+  ctx.fillStyle = '#4A3423'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  lines.forEach((l, i) => ctx.fillText(l, bx + w / 2, by + 6 + 9.5 + i * 19));
+  ctx.globalAlpha = 1;
+}
+
+/* =====================================================================
+   森林背景（暫代：程式繪製；之後換成 ChatGPT 生成的 assets/backgrounds/bg_forest_{day|dusk|night}.webp）
+   ===================================================================== */
+const ART_BG = [ /* 'day', 'dusk', 'night' */ ];   // 有正式背景圖後登記
+const BG = {};
+for (const k of ART_BG){ const img = new Image(); img.onload = () => { BG[k] = img; }; img.src = `assets/backgrounds/bg_forest_${k}.webp`; }
+function skyPhase(h){ return h >= 7 && h < 17 ? 'day' : h >= 17 && h < 19.5 ? 'dusk' : 'night'; }
+function drawForest(now){
+  const h = hourOf(G.t), ph = skyPhase(h);
+  if (BG[ph]){ ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(BG[ph], 0, 0, W, H); return; }
+  const sky = { day:['#9ED3F0', '#E3F4FB'], dusk:['#F3A77E', '#FCE2C2'], night:['#23305C', '#475285'] }[ph];
+  let g = ctx.createLinearGradient(0, 0, 0, 200); g.addColorStop(0, sky[0]); g.addColorStop(1, sky[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 210);
+  if (ph === 'night'){ ctx.fillStyle = '#FFF6C8'; ell(410, 44, 14, 14); ctx.fill(); ctx.fillStyle = '#FFFFFF'; for (const [sx, sy] of [[40, 30], [96, 60], [160, 24], [230, 52], [300, 30], [350, 80], [70, 100]]) ctx.fillRect(sx, sy, 2, 2); }
+  else { ctx.fillStyle = ph === 'day' ? '#FFE88A' : '#FFC27A'; ell(410, 50, 20, 20); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.85)'; for (const [cx, cy] of [[90, 46], [250, 30]]){ ell(cx, cy, 26, 10); ctx.fill(); ell(cx + 18, cy - 6, 16, 10); ctx.fill(); } }
+  const dark = ph === 'night' ? .55 : ph === 'dusk' ? .2 : 0;
+  ctx.fillStyle = shade('#A7D08A', dark); ell(120, 222, 200, 60); ctx.fill(); ctx.fillStyle = shade('#95C477', dark); ell(400, 226, 190, 56); ctx.fill();
+  g = ctx.createLinearGradient(0, 212, 0, H); g.addColorStop(0, shade('#9CCB6F', dark)); g.addColorStop(1, shade('#86B95C', dark)); ctx.fillStyle = g; ctx.fillRect(0, 212, W, H - 212);
+  for (const [x, s] of [[40, 1.1], [446, 1]]){
+    ctx.fillStyle = shade('#9A6B3F', dark); rr(x - 10 * s, 120, 20 * s, 104, 6); ctx.fill();
+    ctx.fillStyle = shade('#6FAE55', dark); ell(x, 104, 52 * s, 44 * s); ctx.fill(); ell(x - 26 * s, 128, 34 * s, 26 * s); ctx.fill(); ell(x + 28 * s, 126, 34 * s, 26 * s); ctx.fill();
+  }
+  for (const [fx, fy] of [[150, 300], [330, 304], [260, 244], [110, 252]]){ emoji(ph === 'night' ? '·' : '🌼', fx, fy, 12); }
+  // 床：葉子小窩
+  ell(240, 280, 70, 16); ctx.fillStyle = shade('#7FB062', dark + .1); ctx.fill();
+}
+function shade(hex, k){ if (!k) return hex; const n = parseInt(hex.slice(1), 16), f = 1 - k; return `rgb(${round((n >> 16 & 255) * f + 30 * k)},${round((n >> 8 & 255) * f + 40 * k)},${round((n & 255) * f + 90 * k)})`; }
+function drawPoops(now){
+  for (const p of G.poops){ emoji('💩', p.x, p.y - 10 + sin(now / 400 + p.x) * .6, 22); }
+}
+
+/* =====================================================================
+   小遊戲 1：接果子（從框架的接點心改）
+   ===================================================================== */
+const GOOD = ['🍓', '🍎', '🥕', '🍯', '🍄', '🍊'];
+function startCatch(){
+  pet.queue = []; pet.cur = null; pet.target = null;
+  mg = { kind:'catch', t0: performance.now(), score: 0, items: [], spawn: 0, px: W / 2, tx: W / 2, done: false, saved: { x: pet.x, y: pet.y }, clover: false };
+  pet.x = W / 2; pet.y = H - 8; pet.setAnim('mg_run');
+  setHint('左右拖曳移動，接住果子、避開石頭！');
+}
+function updateCatch(dt, now){
+  const g = mg, e = (now - g.t0) / 1000;
+  if (g.done){ if (now > g.doneAt) endMinigame(); return; }
+  g.px += (g.tx - g.px) * min(1, dt * 12); pet.dir = g.tx >= pet.x ? 1 : -1; pet.x = g.px;
+  g.spawn -= dt;
+  if (g.spawn <= 0 && e < 19){
+    g.spawn = rnd(.4, .65);
+    const r = random(), bad = r < .17, clover = !bad && stageOf(G.form) === 'child' && !g.cloverSpawned && r < .22;
+    if (clover) g.cloverSpawned = true;
+    g.items.push({ x: rnd(24, W - 24), y: 30, v: rnd(90, 140) + e * 4, ch: bad ? '🪨' : clover ? '🍀' : pick(GOOD), bad, clover });
+  }
+  for (const it of g.items){
+    it.y += it.v * dt;
+    if (!it.hit && it.y > H - 100 && it.y < H - 56 && abs(it.x - g.px) < 38){
+      it.hit = true;
+      if (it.bad){ g.score = max(0, g.score - 2); pet.setAnim('surprised'); setTimeout(() => mg && !mg.done && pet.setAnim('mg_run'), 500); }
+      else { g.score++; if (it.clover) g.clover = true; g.pop = { x: it.x, y: it.y, t: now, txt: it.clover ? '四葉草！' : '+1' }; }
+    }
+  }
+  g.items = g.items.filter(it => !it.hit && it.y < H + 30);
+  if (e >= 20){ g.done = true; g.win = g.score >= 10; g.doneAt = now + 2400; pet.setAnim(g.win ? 'excited' : 'happy'); pet.say(g.win ? `接到 ${g.score} 個！好厲害！` : `接到 ${g.score} 個～`, 2400); }
+}
+function drawCatch(now){
+  const g = mg, e = (now - g.t0) / 1000;
+  const grad = ctx.createLinearGradient(0, 0, 0, H); grad.addColorStop(0, '#DFF1FA'); grad.addColorStop(1, '#E9F5D6'); ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#9CCB6F'; ctx.fillRect(0, H - 8, W, 8);
+  for (const it of g.items) emoji(it.ch, it.x, it.y, 28);
+  drawPet(pet, now); drawSpeech(pet, now);
+  if (g.pop && now - g.pop.t < 600){ ctx.globalAlpha = 1 - (now - g.pop.t) / 600; txt(g.pop.txt, g.pop.x, g.pop.y - 20 - (now - g.pop.t) / 20, 18, '#4E8A36'); ctx.globalAlpha = 1; }
+  hud(`接果子　${g.score} 個`, `${max(0, 20 - floor(e))} 秒`);
+}
+/* ---------- 小遊戲 2：猜猜往哪邊（塔麻可吉經典玩法） ---------- */
+function startGuess(){
+  pet.queue = []; pet.cur = null; pet.target = null;
+  mg = { kind:'guess', round: 0, wins: 0, phase:'ask', t: performance.now(), saved: { x: pet.x, y: pet.y } };
+  pet.x = W / 2; pet.y = 270; pet.setAnim('idle');
+  setHint('點畫面左邊或右邊，猜它會往哪邊看！');
+}
+function guessTap(x){
+  const g = mg; if (g.phase !== 'ask') return;
+  const pickSide = x < W / 2 ? -1 : 1, ans = random() < .5 ? -1 : 1;
+  g.ans = ans; g.ok = pickSide === ans; g.round++; if (g.ok) g.wins++;
+  g.phase = 'show'; g.t = performance.now(); pet.dir = ans;
+  pet.setAnim(g.ok ? 'happy' : 'look');
+}
+function updateGuess(dt, now){
+  const g = mg;
+  if (g.phase === 'show' && now - g.t > 1300){
+    if (g.round >= 5){ g.phase = 'end'; g.t = now; g.win = g.wins >= 3; pet.setAnim(g.win ? 'excited' : 'happy'); pet.say(g.win ? `猜中 ${g.wins} 次！你好懂我！` : `猜中 ${g.wins} 次～`, 2400); }
+    else { g.phase = 'ask'; pet.setAnim('idle'); }
+  }
+  if (g.phase === 'end' && now - g.t > 2400) endMinigame();
+}
+function drawGuess(now){
+  const g = mg;
+  drawForest(now);
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(0, 0, W / 2, H);
+  txt('←', 60, 160, 40, '#4A3423'); txt('→', W - 60, 160, 40, '#4A3423');
+  drawPet(pet, now); drawFx(pet, now); drawSpeech(pet, now);
+  if (g.phase === 'show') txt(g.ok ? '猜中了！' : '沒猜中～', W / 2, 60, 22, g.ok ? '#4E8A36' : '#C0563E');
+  hud(`猜猜往哪邊　第 ${min(5, g.round + (g.phase === 'ask' ? 1 : 0))}/5 回`, `中 ${g.wins}`);
+}
+function hud(a, b){
+  ctx.font = `15px ${FONT}`; const wa = ctx.measureText(a).width + 26;
+  rr(10, 10, wa, 34, 17); fs('rgba(255,255,255,.92)', '#C9DDB0', 1.5);
+  ctx.fillStyle = '#4A3423'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(a, 23, 27);
+  rr(W - 82, 10, 72, 34, 17); fs('rgba(255,255,255,.92)', '#C9DDB0', 1.5); ctx.fillStyle = '#4A3423'; ctx.textAlign = 'center'; ctx.fillText(b, W - 46, 27);
+}
+function endMinigame(){
+  const g = mg, win = !!g.win, st = stageOf(G.form);
+  G.mood = clamp(G.mood + (win ? 25 : 12.5)); G.hunger = clamp(G.hunger - 4);
+  G.dayStats.plays++;
+  if (st === 'child'){
+    const R = G.R; R.plays++; R.games++; if (win) R.wins++;
+    if (g.kind === 'catch' && g.clover) R.clover = true;
+    if (g.kind === 'guess' && win) R.guessWins++;
+    const hh = hourOf(G.t), dk = dateKey(G.t);
+    if (hh >= 7 && hh < 9 && !R.morningPlayDays.includes(dk)) R.morningPlayDays.push(dk);
+  }
+  pet.x = g.saved.x; pet.y = g.saved.y; pet.setAnim(pet.rest());
+  mg = null; setHint('點寵物可以摸摸'); save(); renderUI();
+}
+
+/* =====================================================================
+   玩家操作
+   ===================================================================== */
+const toastEl = document.getElementById('toast');
+let toastT;
+function toast(msg){ toastEl.textContent = msg; toastEl.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => toastEl.hidden = true, 2600); }
+function setHint(s){ document.getElementById('hint').textContent = s; }
+function prep(opts = {}){
+  lastInput = performance.now();
+  if (mg){ toast('小遊戲進行中'); return false; }
+  if (stageOf(G.form) === 'egg'){ toast('還是一顆蛋，再等一下下～'); return false; }
+  if (G.sleeping && !opts.sleepOk){ toast(`${petName()}正在睡覺，明天早上 7 點會起床。`); return false; }
+  return true;
+}
+function recentFeeds(ms){ return G.feedLog.filter(f => G.t - f.t <= ms); }
+function feed(food){
+  if (!prep()) return;
+  const st = stageOf(G.form), ch = charOf(G.form);
+  if (food.cat !== 'T' && G.fake){ pet.run([{ anim:'refuse', dur:1800, say: line('refuse') }]); return; }
+  const res = Gr.feedResult(food, { hunger: G.hunger, stage: st, char: ch,
+    recentSame: recentFeeds(3 * HOUR).filter(f => f.id === food.id).length,
+    hourCount: recentFeeds(HOUR).filter(f => f.counted).length });
+  if (res.refused){
+    G.mood = clamp(G.mood + res.mood);
+    if (st === 'child') G.R.overfeed++;
+    pet.run([{ anim:'refuse', dur:1800, say: line('full') }]); save(); renderUI(); return;
+  }
+  G.feedLog.push({ t: G.t, id: food.id, counted: !!res.counts && food.cat !== 'T', treat: food.cat === 'T' });
+  G.feedLog = recentFeeds(3 * HOUR);
+  pet.run([{ anim:'eat', dur:2400, prop: food.icon, say: food.cat === 'T' ? line('treat') : res.favorite ? line('fav') : line('fed'), end: () => {
+    G.hunger = clamp(G.hunger + res.hunger); G.mood = clamp(G.mood + res.mood); pet.prop = null;
+    if (food.cat === 'T'){
+      G.dayStats.treats++; if (st === 'child'){ G.R.treats++; G.R.foods[food.id] = (G.R.foods[food.id] || 0) + 1; }
+      if (recentFeeds(HOUR).filter(f => f.treat).length >= 3 && !G.sick) getSick('treat');
+    } else {
+      G.dayStats.meals++; G.dayStats.cats[food.cat]++;
+      if (Math.random() < Gr.POOP_CHANCE[st] && !G.poopDue) G.poopDue = G.t + (20 + floor(Gr.roll(G.petId, 'poop' + G.t) * 20)) * MIN;
+      if (st === 'baby'){ for (const c in res.w) G.hidden[c] += res.w[c]; if (res.valid) G.babyMeals++; }
+      if (st === 'child'){ const R = G.R; R.meals++; R.cats[food.cat]++; R.foods[food.id] = (R.foods[food.id] || 0) + 1; if (res.favorite) R.favMeals++; }
+    }
+    save(); renderUI();
+  } }]);
+  renderUI();
+}
+function doAction(type){
+  switch (type){
+    case 'feedMenu': if (prep()) openFeed(); return;
+    case 'sleep': {
+      if (!prep()) return;
+      const h = hourOf(G.t);
+      if (h < T.bedOpenHour && h >= T.wakeHour){ toast('晚上 7 點以後才能去睡覺喔'); return; }
+      if (G.sick){ toast('先用藥草把病治好吧'); return; }
+      goSleep(true); break;
+    }
+    case 'playMenu':
+      if (!prep()) return;
+      if (G.sick){ pet.run([{ anim:'sick', dur:1800, say: line('noPlay') }]); return; }
+      openPlay(); return;
+    case 'medicine':
+      if (!prep({ sleepOk: true })) return;
+      if (!G.sick){ pet.say(line('notSick')); return; }
+      G.medicineTries++;
+      pet.run([{ anim:'medicine', dur:1600, say: line('medicine'), end: () => {
+        if (G.medicineTries >= 2 || random() < .5){ G.sick = false; G.sickSince = null; pet.run([{ anim:'happy', dur:1600, say: line('cured') }]); }
+        else pet.say('還有一點不舒服…', 2000);
+        save(); renderUI();
+      } }]); break;
+    case 'clean': {
+      if (!prep({ sleepOk: true })) return;
+      if (!G.poops.length){ toast('沒有便便要清喔'); return; }
+      if (stageOf(G.form) === 'child') G.R.poopsOnTime += G.poops.filter(p => G.t <= p.cleanBy).length;
+      G.poops = []; G.dayStats.cleans++;
+      if (!G.sleeping) pet.run([{ anim:'happy', dur:1400, say: line('cleaned') }]);
+      break;
+    }
+    case 'scold':
+      if (!prep()) return;
+      if (G.fake){ G.fake = null; G.discipline = min(100, G.discipline + 25); pet.run([{ anim:'scolded', dur:2000, say: line('scolded') }]); toast('乖巧度提升了！'); }
+      else pet.run([{ anim:'confused', dur:1800, say: line('notNeeded') }]);
+      break;
+    case 'statusMenu': openStatus(); return;
+    case 'dexMenu': openDex(); return;
+  }
+  save(); renderUI();
+}
+function patPet(){
+  if (!prep({ sleepOk: true })) return;
+  if (G.sleeping){ pet.say(line('sleepTalk'), 1600); return; }
+  const recent = (G.patLog || []).filter(t => G.t - t < 10 * MIN);
+  const effective = recent.length < 3;
+  G.patLog = [...recent, G.t];
+  if (effective) G.mood = clamp(G.mood + 4);
+  G.dayStats.pats++;
+  if (stageOf(G.form) === 'child'){ G.R.pats++; const dk = dateKey(G.t); G.R.patDays[dk] = (G.R.patDays[dk] || 0) + 1; }
+  pet.run([{ anim:'headpat', dur:1800, say: line('pat') }]);
+  save(); renderUI();
+}
+
+/* ---------- 畫面點擊 ---------- */
+function toLocal(ev){ const r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) / r.width * W, y: (ev.clientY - r.top) / r.height * H }; }
+cv.addEventListener('pointerdown', ev => {
+  const { x, y } = toLocal(ev);
+  lastInput = performance.now(); unlockAudio();
+  if (mg){ if (mg.kind === 'catch') mg.tx = clamp(x, 26, W - 26); else guessTap(x); return; }
+  const hit = abs(x - pet.x) < 60 && y > (pet._top ?? pet.y - 110) - 6 && y < pet.y + 8;
+  if (hit) patPet();
+});
+cv.addEventListener('pointermove', ev => { if (mg && mg.kind === 'catch' && (ev.buttons || ev.pointerType !== 'mouse')) mg.tx = clamp(toLocal(ev).x, 26, W - 26); });
+window.addEventListener('keydown', ev => {
+  if (!mg) return;
+  if (mg.kind === 'catch'){ if (ev.key === 'ArrowLeft'){ mg.tx = clamp(mg.tx - 44, 26, W - 26); ev.preventDefault(); } if (ev.key === 'ArrowRight'){ mg.tx = clamp(mg.tx + 44, 26, W - 26); ev.preventDefault(); } }
+  else { if (ev.key === 'ArrowLeft') guessTap(0); if (ev.key === 'ArrowRight') guessTap(W); }
+});
+
+/* =====================================================================
+   介面
+   ===================================================================== */
+const heartStr = v => { const n = v <= 0 ? 0 : Math.ceil(v / 25 - 1e-9); return '♥'.repeat(n) + '♡'.repeat(4 - n); };
+function needsCall(){
+  if (stageOf(G.form) === 'egg' || G.sleeping) return false;
+  return G.hunger <= 25 || G.mood <= 25 || G.poops.length > 0 || G.sick || !!G.fake;
+}
+function stateLabel(){
+  const st = stageOf(G.form);
+  if (mg) return ['小遊戲中', false];
+  if (st === 'egg') return ['快孵化了', false];
+  if (G.sick) return ['生病了', true];
+  if (G.sleeping) return [G.napping ? '午睡中' : '睡覺中', false];
+  if (G.fake) return ['在叫你', true];
+  if (G.poops.length) return ['有便便', true];
+  if (G.hunger <= 25) return ['肚子餓', true];
+  if (G.mood <= 25) return ['不開心', true];
+  if (G.mood > 75) return ['心情很好', false];
+  return ['悠閒中', false];
+}
+function renderStatus(){
+  const st = stageOf(G.form);
+  const stName = { egg:'蛋', baby:'寶寶', child:'幼年', adult:'成年' }[st];
+  document.getElementById('who').textContent = st === 'adult' ? `${petName()}・${FORMS[G.form].name}` : `${petName()}（${stName}）`;
+  const [lab, warn] = stateLabel(); const chip = document.getElementById('chip'); chip.textContent = lab; chip.classList.toggle('warn', warn);
+  document.getElementById('hHunger').textContent = st === 'egg' ? '－' : heartStr(G.hunger);
+  document.getElementById('hMood').textContent = st === 'egg' ? '－' : heartStr(G.mood);
+}
+const ACTIONS = [
+  ['feedMenu', '🍽', '餵食'], ['sleep', '🌙', '去睡覺'], ['playMenu', '🎮', '玩耍'], ['medicine', '🌿', '藥草'],
+  ['clean', '🧹', '清便便'], ['statusMenu', '📋', '狀態'], ['scold', '👆', '教一教'], ['dexMenu', '📖', '圖鑑'],
+];
+function renderActions(){
+  const h = hourOf(G.t), egg = stageOf(G.form) === 'egg';
+  document.getElementById('actions').innerHTML = ACTIONS.map(([act, ic, lb]) => {
+    let sub = '', dis = false, alert = false;
+    if (act === 'sleep'){ if (G.sleeping){ sub = '睡覺中'; dis = true; } else if (h >= T.wakeHour && h < T.bedOpenHour){ sub = '19:00 後'; dis = true; } }
+    if (act === 'medicine' && G.sick){ sub = '生病中'; alert = true; }
+    if (act === 'clean' && G.poops.length){ sub = `${G.poops.length} 坨`; alert = true; }
+    if (act === 'feedMenu' && !egg && G.hunger <= 25) alert = true;
+    if (act === 'playMenu' && !egg && G.mood <= 25) alert = true;
+    if (egg && !['statusMenu', 'dexMenu'].includes(act)) dis = true;
+    return `<button class="act${alert ? ' alert' : ''}" type="button" data-act="${act}"${dis ? ' disabled' : ''}><span class="ic" aria-hidden="true">${ic}</span><span class="lb">${lb}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</button>`;
+  }).join('');
+}
+document.getElementById('actions').addEventListener('click', ev => { const b = ev.target.closest('.act'); if (b && !b.disabled){ unlockAudio(); doAction(b.dataset.act); } });
+function renderUI(){ renderStatus(); renderActions(); }
+
+/* ---------- 底部選單 ---------- */
+const sheet = document.getElementById('sheet'), sheetBody = document.getElementById('sheetBody');
+function openSheet(html, bind){ sheetBody.innerHTML = html; sheet.hidden = false; bind && bind(); sheetBody.querySelector('button')?.focus(); }
+function closeSheet(){ sheet.hidden = true; }
+sheet.addEventListener('click', ev => { if (ev.target === sheet || ev.target.closest('[data-close]')) closeSheet(); });
+window.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !sheet.hidden) closeSheet(); });
+function openFeed(kind = 'meal'){
+  const st = stageOf(G.form);
+  const list = FOODS.filter(f => (kind === 'meal' ? f.cat !== 'T' : f.cat === 'T') && Gr.unlocked(f, st, G.babyMeals));
+  const desc = f => `飽足 ${f.hunger >= 25 ? '＋＋＋' : f.hunger >= 20 ? '＋＋' : '＋'} · 心情 ${f.mood >= 12 ? '＋＋＋' : f.mood >= 4 ? '＋＋' : '＋'}`;
+  openSheet(`<h2>要給${petName()}吃什麼？</h2>
+    <div class="tabs" role="tablist"><button class="tab" role="tab" data-kind="meal" aria-selected="${kind === 'meal'}" type="button">正餐</button><button class="tab" role="tab" data-kind="treat" aria-selected="${kind === 'treat'}" type="button">點心</button></div>
+    <div class="opts">${list.map(f => `<button class="opt" type="button" data-food="${f.id}"><span class="ic" aria-hidden="true">${f.icon}</span><span class="t">${f.name}<small>${desc(f)}</small></span></button>`).join('')}</div>
+    ${kind === 'treat' ? '<p>點心會讓心情變好，但一次吃太多會肚子痛喔。</p>' : ''}
+    <button class="close" type="button" data-close>取消</button>`, () => {
+    sheetBody.querySelectorAll('[data-kind]').forEach(b => b.addEventListener('click', () => openFeed(b.dataset.kind)));
+    sheetBody.querySelectorAll('[data-food]').forEach(b => b.addEventListener('click', () => { closeSheet(); feed(FOOD[b.dataset.food]); }));
+  });
+}
+function openPlay(){
+  openSheet(`<h2>要玩什麼？</h2>
+    <div class="opts">
+      <button class="opt" type="button" data-game="catch"><span class="ic" aria-hidden="true">🍓</span><span class="t">接果子<small>20 秒接住 10 個就贏</small></span></button>
+      <button class="opt" type="button" data-game="guess"><span class="ic" aria-hidden="true">👀</span><span class="t">猜猜往哪邊<small>5 回猜中 3 回就贏</small></span></button>
+    </div><button class="close" type="button" data-close>取消</button>`, () => {
+    sheetBody.querySelectorAll('[data-game]').forEach(b => b.addEventListener('click', () => { closeSheet(); b.dataset.game === 'catch' ? startCatch() : startGuess(); }));
+  });
+}
+function ageDays(){ return G.hatchAt ? floor((G.t - G.hatchAt) / DAY) : 0; }
+function openStatus(){
+  const st = stageOf(G.form), adult = st === 'adult';
+  let armed = false;
+  openSheet(`<h2>${petName()}的狀態</h2>
+    <div class="statrow">
+      <span class="k">型態</span><span>${FORMS[G.form].name}${adult ? `（${FORMS[G.form].en}）` : ''}</span>
+      <span class="k">年齡</span><span>${st === 'egg' ? '還沒孵化' : `${ageDays()} 歲`}</span>
+      <span class="k">飽足</span><span>${st === 'egg' ? '－' : heartStr(G.hunger)}</span>
+      <span class="k">心情</span><span>${st === 'egg' ? '－' : heartStr(G.mood)}</span>
+      <span class="k">乖巧</span><span class="meter" role="meter" aria-valuenow="${G.discipline}" aria-valuemin="0" aria-valuemax="100"><b style="width:${G.discipline}%"></b></span>
+      <span class="k">第幾代</span><span>${G.gen}</span>
+    </div>
+    ${G.diary[0] ? `<div class="diary">📔 ${G.diary[0].text}</div>` : ''}
+    ${adult ? `<p>長大了！可以讓${petName()}回到森林生活，留在圖鑑裡，再孵一顆新的蛋。</p><button class="plain" type="button" id="btnRetire">🌳 送回森林、孵新的蛋</button>` : ''}
+    <button class="close" type="button" data-close>關閉</button>`, () => {
+    const b = sheetBody.querySelector('#btnRetire');
+    if (b) b.addEventListener('click', () => {
+      if (!armed){ armed = true; b.textContent = '再按一次確認'; return; }
+      const col = G.collection.slice(), gen = G.gen; G = newGame(col); G.gen = gen + 1; resetPet(); closeSheet(); save(); renderUI(); toast('新的橡實蛋來了！');
+    });
+  });
+}
+function openDex(){
+  const got = new Set(G.collection);
+  const cell = f => {
+    const F = FORMS[f], has = got.has(f);
+    if (!has && F.hidden) return `<div><span class="ic no">？</span><span class="no">還有祕密…</span></div>`;
+    const ic = f === 'egg' ? '🌰' : f === 'baby' ? '🌱' : F.stage === 'child' ? { kuri:'🐰', sunny:'🦊', dodo:'🐻', piko:'🦔' }[f] : F.badge;
+    return has ? `<div><span class="ic">${ic}</span><span>${F.name}</span></div>` : `<div><span class="ic no" style="filter:grayscale(1) opacity(.3)">${ic}</span><span class="no">???</span></div>`;
+  };
+  openSheet(`<h2>圖鑑（${G.collection.length}/${FORM_ORDER.length}）</h2>
+    <div class="dex">${FORM_ORDER.map(cell).join('')}</div>
+    ${G.diary.length ? `<h2>成長日記</h2>${G.diary.slice(0, 5).map(d => `<div class="diary">${d.day.slice(5).replace('-', '/')}　${d.text}</div>`).join('')}` : ''}
+    <button class="close" type="button" data-close>關閉</button>`);
+}
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+let soundOn = true;
+function openSettings(){
+  let armed = false;
+  openSheet(`<h2>設定</h2>
+    <div class="seg"><button class="opt" type="button" id="btnSound" aria-pressed="${soundOn}">${soundOn ? '🔔 提示音：開' : '🔕 提示音：關'}</button></div>
+    <h2>存檔</h2>
+    <p>進度存在這台裝置的瀏覽器裡。可以匯出備份，換裝置時再匯入。</p>
+    <div class="seg"><button class="opt" type="button" id="btnExport">匯出存檔</button><button class="opt" type="button" id="btnImport">匯入存檔</button></div>
+    <textarea id="saveBox" hidden aria-label="存檔內容"></textarea>
+    <details><summary>開發測試</summary>
+      <p>時間流速（只影響開著遊戲時）。</p>
+      <div class="seg">${[1, 10, 60, 600].map(v => `<button class="opt" type="button" data-speed="${v}" aria-pressed="${speed === v}">${v}×</button>`).join('')}</div>
+      <div class="seg"><button class="opt" type="button" data-skip="60">＋1 小時</button><button class="opt" type="button" data-skip="1440">＋1 天</button><button class="opt" type="button" id="btnSync">對齊現實時間</button></div>
+      <p id="dbg"></p>
+    </details>
+    <button class="danger" type="button" id="btnReset">重新開始（清除存檔與圖鑑）</button>
+    <button class="close" type="button" data-close>完成</button>`, () => {
+    const box = sheetBody.querySelector('#saveBox');
+    sheetBody.querySelector('#btnSound').addEventListener('click', e => { soundOn = !soundOn; e.currentTarget.setAttribute('aria-pressed', String(soundOn)); e.currentTarget.textContent = soundOn ? '🔔 提示音：開' : '🔕 提示音：關'; save(); });
+    sheetBody.querySelector('#btnExport').addEventListener('click', () => { box.hidden = false; box.value = btoa(unescape(encodeURIComponent(JSON.stringify(serialize())))); box.select(); toast('已產生存檔碼，請複製保存'); });
+    sheetBody.querySelector('#btnImport').addEventListener('click', () => {
+      if (box.hidden){ box.hidden = false; box.value = ''; box.placeholder = '貼上存檔碼後再按一次「匯入存檔」'; box.focus(); return; }
+      try { const d = JSON.parse(decodeURIComponent(escape(atob(box.value.trim())))); if (!d.G) throw 0; applySave(d); save(); renderUI(); closeSheet(); toast('匯入完成'); } catch (e) { toast('存檔碼不正確'); }
+    });
+    sheetBody.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => { speed = +b.dataset.speed; sheetBody.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); save(); clock(); }));
+    sheetBody.querySelectorAll('[data-skip]').forEach(b => b.addEventListener('click', () => { for (let i = 0; i < +b.dataset.skip; i++) tickMinute(true); save(); renderUI(); clock(); dbg(); }));
+    sheetBody.querySelector('#btnSync').addEventListener('click', () => { G.t = Date.now(); speed = 1; save(); clock(); toast('已對齊現實時間'); });
+    const r = sheetBody.querySelector('#btnReset');
+    r.addEventListener('click', () => { if (!armed){ armed = true; r.textContent = '再按一次確認清除'; return; } G = null; G = newGame(); speed = 1; resetPet(); save(); renderUI(); closeSheet(); toast('已重新開始'); });
+    dbg();
+  });
+}
+function dbg(){
+  const el = sheetBody.querySelector('#dbg'); if (!el) return;
+  const st = stageOf(G.form), sh = Gr.shares(G.hidden).p;
+  let s = `階段分鐘 ${G.stageMin}｜寶寶有效正餐 ${G.babyMeals}｜乖巧 ${G.discipline}`;
+  if (st === 'baby') s += `｜傾向 G${(sh.G * 100) | 0} S${(sh.S * 100) | 0} H${(sh.H * 100) | 0} C${(sh.C * 100) | 0}`;
+  if (st === 'child'){ const sc = Gr.styleScores(Gr.metrics(G.R, G.discipline)); s += `｜P${sc.P.toFixed(2)} R${sc.R.toFixed(2)} F${sc.F.toFixed(2)}｜失誤 ${G.R.mistakes}`; }
+  el.textContent = s;
+}
+
+/* ---------- 提示音（輕柔，可關閉） ---------- */
+let actx = null;
+function unlockAudio(){ if (!actx){ try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(freqs, dur = .12){
+  if (!soundOn || !actx) return;
+  freqs.forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = f; const t0 = actx.currentTime + i * dur; g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.08, t0 + .02); g.gain.exponentialRampToValueAtTime(.001, t0 + dur); o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + dur + .02); });
+}
+const playCall = () => tone([880, 660]);
+const playChime = () => tone([523, 659, 784, 1047], .14);
+
+/* =====================================================================
+   存檔
+   ===================================================================== */
+function serialize(){ return { v: SAVE_VERSION, savedAt: Date.now(), speed, soundOn, G }; }
+function migrate(g){
+  // 之後存檔格式改版時在這裡升級舊存檔
+  const base = newGame(g.collection || []);
+  return Object.assign(base, g, { R: Object.assign(Gr.emptyRecords(), g.R || {}) });
+}
+function applySave(d, catchUp = true){
+  if (!d || !d.G) return 0;
+  G = migrate(d.G); speed = d.speed || 1; soundOn = d.soundOn !== false;
+  resetPet();
+  if (!catchUp) return 0;
+  const now = Date.now(), away = now - (d.savedAt || now);
+  if (away < 0){ G.decisions.push({ t: G.t, type: 'clock-back', ms: away }); return 0; }  // 時間倒退：不補算
+  const mins = floor(away / MIN);
+  const run = min(mins, T.offlineCapMin);
+  for (let i = 0; i < run; i++) tickMinute(false);
+  if (mins > run) G.t += (mins - run) * MIN;                                                 // 超過上限的時間直接跳過（數值和成長都停住）
+  if (speed === 1 && abs(G.t - now) < 2 * MIN) G.t = now;
+  // 離線期間的便便：回來後 30 分鐘內清掉都算準時，30 分鐘後才可能因此生病
+  for (const p of G.poops) if (p.off){ p.born = max(p.born, G.t - 90 * MIN); p.cleanBy = G.t + 30 * MIN; p.off = false; }
+  G.graceUntil = G.t + 30 * MIN;
+  return mins;
+}
+function resetPet(){ pet.x = 240; pet.y = 266; pet.queue = []; pet.cur = null; pet.target = null; pet.speech = null; pet.setAnim(pet.rest()); mg = null; }
+function save(){ try { localStorage.setItem(LS_KEY, JSON.stringify(serialize())); } catch (e) {} }
+
+/* =====================================================================
+   主迴圈
+   ===================================================================== */
+let last = performance.now(), uiT = 0, saveT = 0, acc = 0, calling = false;
+function frame(now){
+  const dt = min(.1, (now - last) / 1000); last = now;
+  if (mg){ if (mg.kind === 'catch') updateCatch(dt, now); else updateGuess(dt, now); }
+  else {
+    acc += dt * 1000 * speed;
+    let n = 0;
+    while (acc >= MIN && n < 600){ acc -= MIN; tickMinute(true); n++; }
+    pet.update(dt, now);
+  }
+  ctx.clearRect(0, 0, W, H);
+  if (mg){ mg.kind === 'catch' ? drawCatch(now) : drawGuess(now); }
+  else {
+    drawForest(now); drawPoops(now); drawPet(pet, now); drawFx(pet, now); drawSpeech(pet, now);
+    if (G.sleeping){ ctx.fillStyle = 'rgba(20,30,70,.28)'; ctx.fillRect(0, 0, W, H); }
+    if (needsCall()){ const k = 1 + sin(now / 160) * .08; ctx.save(); ctx.translate(W - 26, 26); ctx.scale(k, k); ell(0, 0, 16, 16); fs('rgba(255,255,255,.92)', '#E2A13A', 2); emoji('🔔', 0, 1, 17); ctx.restore(); }
+    const fl = (now - flashAt) / 1000; if (fl < 1.2){ ctx.fillStyle = `rgba(255,255,240,${(1 - fl / 1.2) * .8})`; ctx.fillRect(0, 0, W, H); }
+  }
+  const c = needsCall(); if (c && !calling) playCall(); calling = c;
+  uiT += dt; saveT += dt;
+  if (uiT > .5){ uiT = 0; renderUI(); }
+  if (saveT > 15){ saveT = 0; save(); }
+  requestAnimationFrame(frame);
+}
+function clock(){
+  const d = new Date(G.t), h = d.getHours();
+  const part = h < 6 ? '深夜' : h < 11 ? '早上' : h < 14 ? '中午' : h < 18 ? '下午' : h < 21 ? '傍晚' : '晚上';
+  document.getElementById('clock').textContent = `${part} ${String(h).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}${speed !== 1 ? ` · 流速 ${speed}×` : ''}`;
+}
+
+function start(){
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { d = null; }
+  if (d && d.G){
+    const away = applySave(d, true);
+    if (away > 30 && stageOf(G.form) !== 'egg' && !G.sleeping) setTimeout(() => pet.run([{ anim:'happy', dur:2400, say: line('miss') }]), 700);
+  } else {
+    G = newGame(); resetPet();
+    setTimeout(() => toast('一顆橡實蛋來到森林裡了！'), 600);
+  }
+  newDayCheck();
+  renderUI(); clock(); setInterval(clock, 5000);
+  requestAnimationFrame(t => { last = t; frame(t); });
+  window.addEventListener('pagehide', save);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+}
+start();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>
