@@ -105,10 +105,10 @@
 
 | 代號 | 角色 | 類型 | 暫名（中／英） | 外觀提案（只加一件新元素） |
 |---|---|---|---|---|
-| A-KU-1 | KURI | 玩樂 | 草原跳跳郵差 / Meadow Messenger | 葉子背包變成郵差包，手拿一封信 |
-| A-KU-2 | KURI | 規律 | 小園丁 / Garden Keeper | 戴葉子草帽、提小澆水壺 |
-| A-KU-3 | KURI | 美食 | 胡蘿蔔甜點師 / Carrot Baker | 圍裙，手捧胡蘿蔔蛋糕 |
-| A-KU-H | KURI | 隱藏 | 四葉草 KURI / Lucky Clover | 葉子領巾變四葉草形狀，周圍有小光點 |
+| A-KU-1 | KURI | 玩樂 | 草原跳跳郵差 / Meadow Messenger | ✅ 定稿：葉子背包換成葉子斜背郵差包，一手揮著信封 |
+| A-KU-2 | KURI | 規律 | 小園丁 / Garden Keeper | ✅ 定稿：提綠色小澆水壺（取消草帽：兩件配件違反「只加一件」，也會擋到耳朵） |
+| A-KU-3 | KURI | 美食 | 胡蘿蔔甜點師 / Carrot Baker | ✅ 定稿：雙手捧胡蘿蔔蛋糕（取消圍裙，同上） |
+| A-KU-H | KURI | 隱藏 | 四葉草 KURI / Lucky Clover | ✅ 定稿：葉子領巾變四葉草；閃光由程式加 |
 | A-SU-1 | SUNNY | 玩樂 | 晨光探險家 / Sunrise Ranger | 戴探險帽、背小望遠鏡 |
 | A-SU-2 | SUNNY | 規律 | 晨間小隊長 / Morning Captain | 胸前小哨子，挺胸站姿 |
 | A-SU-3 | SUNNY | 美食 | 莓果野餐家 / Berry Picnicker | 提野餐籃，裡面裝莓果 |
