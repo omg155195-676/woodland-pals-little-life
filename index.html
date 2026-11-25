@@ -513,7 +513,7 @@ function drawPet(p, now){
     if (st === 'egg') eggCrack(hgt, w);
     if (st === 'baby') babyOverlay(s, hgt, w, now);
     if (st === 'adult' && !IMG[`${f}_act_idle`]){ if (p.dir < 0) ctx.scale(-1, 1); adultBadge(FORMS[f], charOf(f), hgt, w, now); }
-    else if (st === 'adult' && FORMS[f].hidden) hiddenSparkle(hgt, w, now);
+    else if (st === 'adult' && FORMS[f].hidden && !G.sleeping) hiddenSparkle(hgt, w, now);
   } else if (st === 'egg') hgt = drawEgg(now);
   else if (st === 'baby') hgt = drawBaby(s, now);
   else hgt = drawHead(charOf(f), s, scale, st === 'adult' ? FORMS[f] : null, now);
@@ -552,7 +552,12 @@ function eggCrack(hgt, w){
 function actImg(f, act, exact){
   const ch = charOf(f), adult = stageOf(f) === 'adult';
   // 成年型只要有自己的 idle，就一律用自己的圖（缺的動作用 idle＋程式動畫），不混用幼年圖，配件才不會消失
-  if (adult && IMG[`${f}_act_idle`]) return IMG[`${f}_act_${act}`] || (exact ? null : IMG[`${f}_act_idle`]);
+  if (adult && IMG[`${f}_act_idle`]){
+    if (IMG[`${f}_act_${act}`]) return IMG[`${f}_act_${act}`];
+    // 成年型還沒有睡覺／生病圖：借用幼年角色的睡覺／生病圖（閉眼躺著），不要站著睡
+    if ((act === 'sleep' || act === 'sick') && IMG[`${ch}_act_${act}`]) return IMG[`${ch}_act_${act}`];
+    return exact ? null : IMG[`${f}_act_idle`];
+  }
   return IMG[`${f}_act_${act}`] || (adult && IMG[`${ch}_act_${act}`]) || (exact ? null : IMG[`${f}_act_idle`] || (adult && IMG[`${ch}_act_idle`]));
 }
 // 成年型正式圖完成前：在幼年圖旁加上代表配件的徽章
