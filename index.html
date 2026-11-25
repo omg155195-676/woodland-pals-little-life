@@ -472,6 +472,7 @@ for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(
 // 正式動作圖（由 ChatGPT 生成）：assets/characters/{form}/act/{form}_act_{動作}.webp
 // 新增圖片後，把型態和動作登記在這裡（沒登記的不會去載入），並加進 sw.js 的 CORE 清單。
 const ART_ACTS = {
+  egg: ['idle'],                       // 橡實蛋 v3（2026-11-25 定稿）
   // kuri: ['idle', 'eat', 'sleep', 'play', 'sick'],
 };
 for (const [f, acts] of Object.entries(ART_ACTS)) for (const a of acts){
@@ -498,14 +499,22 @@ function drawPet(p, now){
   let hgt = 0;
   if (img){
     hgt = 118 * scale; const w = img.width * hgt / img.height;
-    if (p.dir < 0) ctx.scale(-1, 1);
+    if (p.dir < 0 && st !== 'egg') ctx.scale(-1, 1);
     ctx.drawImage(img, -w / 2, -hgt, w, hgt);
+    if (st === 'egg') eggCrack(hgt, w);
   } else if (st === 'egg') hgt = drawEgg(now);
   else if (st === 'baby') hgt = drawBaby(s, now);
   else hgt = drawHead(charOf(f), s, scale, st === 'adult' ? FORMS[f] : null, now);
   ctx.restore();
   p._top = p.y - hgt - s.bob; p._h = hgt;
   if (G.sleeping && st !== 'egg' && !mg) drawBlanket(p, scale);
+}
+// 快孵化時在蛋身畫裂痕（正式圖與暫代圖共用）
+function eggCrack(hgt, w){
+  if (T.eggMin - G.stageMin > 1) return;
+  const y = -hgt * .36, s = w / 2.6;
+  ctx.strokeStyle = '#4A2A16'; ctx.lineWidth = max(2, hgt / 45); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-s, y); ctx.lineTo(-s * .55, y + s * .22); ctx.lineTo(-s * .15, y - s * .12); ctx.lineTo(s * .25, y + s * .2); ctx.lineTo(s * .6, y - s * .08); ctx.stroke();
 }
 function drawEgg(now){
   // 暫代：橡實蛋（之後換成 ChatGPT 正式圖）
