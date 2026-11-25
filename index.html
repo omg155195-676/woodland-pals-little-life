@@ -473,6 +473,7 @@ for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(
 // 新增圖片後，把型態和動作登記在這裡（沒登記的不會去載入），並加進 sw.js 的 CORE 清單。
 const ART_ACTS = {
   egg: ['idle'],                       // 橡實蛋 v3（2026-11-25 定稿）
+  baby: ['idle'],                      // 森林寶寶 v1（2026-11-25 定稿）
   // kuri: ['idle', 'eat', 'sleep', 'play', 'sick'],
 };
 for (const [f, acts] of Object.entries(ART_ACTS)) for (const a of acts){
@@ -502,12 +503,33 @@ function drawPet(p, now){
     if (p.dir < 0 && st !== 'egg') ctx.scale(-1, 1);
     ctx.drawImage(img, -w / 2, -hgt, w, hgt);
     if (st === 'egg') eggCrack(hgt, w);
+    if (st === 'baby') babyOverlay(s, hgt, w, now);
   } else if (st === 'egg') hgt = drawEgg(now);
   else if (st === 'baby') hgt = drawBaby(s, now);
   else hgt = drawHead(charOf(f), s, scale, st === 'adult' ? FORMS[f] : null, now);
   ctx.restore();
   p._top = p.y - hgt - s.bob; p._h = hgt;
   if (G.sleeping && st !== 'egg' && !mg) drawBlanket(p, scale);
+}
+// 森林寶寶正式圖的程式疊加：睡覺閉眼、嫩芽傾向提示（位置是相對圖片的比例）
+const BABY_EYES = [[-.105, .388], [.209, .388]], BABY_LEAF = [.139, .90];
+function babyOverlay(s, hgt, w, now){
+  const hint = Gr.babyHint(G.hidden), t = now / 1000;
+  if (hint.level === 2 || (hint.level === 1 && (t % 6) < 1.5)){
+    const x = BABY_LEAF[0] * w, y = -BABY_LEAF[1] * hgt, r = hgt * .1;
+    const g = ctx.createRadialGradient(x, y, r * .2, x, y, r);
+    g.addColorStop(0, CAT_TINT[hint.cat] + 'CC'); g.addColorStop(1, CAT_TINT[hint.cat] + '00');
+    ctx.fillStyle = g; ell(x, y, r, r); ctx.fill();
+    if (hint.cat === 'S'){ ell(x + r * .7, y - r * .5, 3, 3); fs('#FFE27A'); }
+  }
+  if (G.sleeping || s.face === 'sleepy'){
+    const er = hgt * .05;
+    for (const [ex, ey] of BABY_EYES){
+      const x = ex * w, y = -ey * hgt;
+      ell(x, y, er * 1.15, er * 1.2); fs('#FFF3DC');
+      ctx.beginPath(); ctx.arc(x, y - er * .2, er * .8, .25, PI - .25); ctx.strokeStyle = '#4A2A16'; ctx.lineWidth = max(2, hgt / 50); ctx.lineCap = 'round'; ctx.stroke();
+    }
+  }
 }
 // 快孵化時在蛋身畫裂痕（正式圖與暫代圖共用）
 function eggCrack(hgt, w){
