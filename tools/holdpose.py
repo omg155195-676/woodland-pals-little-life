@@ -49,10 +49,20 @@ def main(outdir, name, src, ref):
         if blob.sum() < inside.sum() * 1.5: paw |= blob
     paw |= front
     front = paw | (ndimage.binary_dilation(paw, iterations=4) & dark)   # 加上手掌外框線
-    # 身體層：洋紅區填胸口毛色（圓外圈的淺色像素平均）
-    ring2 = ndimage.binary_dilation(inside, iterations=8) & ~inside & (al > 200)
-    light = ring2 & (rgb.min(2) > 150)
-    fill = np.median(rgb[light], 0) if light.sum() > 20 else np.array([250, 240, 228])
+    # 身體層：洋紅區用「圓形左右兩側」的毛色平塗（避開上面的嘴巴、下面的衣服），邊緣稍微柔化
+    ys_, xs_ = np.nonzero(inside); cy0, r0 = ys_.mean(), np.sqrt(inside.sum() / np.pi)
+    band = ndimage.binary_dilation(inside, iterations=16) & ~ndimage.binary_dilation(inside, iterations=7) & (al > 200) & ~dark   # 離圓 7px 以上，避開洋紅混色
+    rows = np.zeros_like(band); rows[int(cy0 - r0 * .35):int(cy0 + r0 * .35)] = True
+    band &= ~ndimage.binary_dilation(mag, iterations=4) & ~((rgb[..., 2] - rgb[..., 1] > 25) & (rgb[..., 0] - rgb[..., 1] > 40))   # 不要沾到洋紅邊
+    band &= ~(rgb[..., 0] - rgb[..., 1] > 88)   # 腮紅、舌頭這類粉紅色不算毛色
+    side = band & rows & ~front
+    if side.sum() < 20: side = band & ~front
+    # 取圓附近最常見的毛色（量化後找眾數）
+    near = ndimage.binary_dilation(inside, iterations=int(r0)) & ~ndimage.binary_dilation(inside, iterations=7) & (al > 200) & ~dark & ~front
+    near &= ~(rgb[..., 0] - rgb[..., 1] > 88)
+    q = (rgb[near] // 16); keys = q[:, 0] * 256 + q[:, 1] * 16 + q[:, 2]
+    best = np.bincount(keys).argmax(); fill = np.median(rgb[near][keys == best], 0)
+    print("fill", fill, file=sys.stderr)
     body = a.copy(); body[mag, :3] = fill; body[mag, 3] = 255
     fr = np.zeros_like(a); fr[front] = a[front]
     tint = front & ndimage.binary_dilation(mag, iterations=4) & (rgb[..., 2] - rgb[..., 1] > 25)   # 外框線沾到的洋紅色改回棕色

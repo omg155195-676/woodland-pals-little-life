@@ -98,6 +98,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14p
 .dex .ic{font-size:24px}
 .dex .no{color:var(--muted)}
 .diary{background:var(--main-soft);border-radius:12px;padding:10px;font-size:13px;line-height:1.6}
+.warn{background:#FCE6DF;color:#8A3B25;border-radius:12px;padding:10px;font-size:13px;line-height:1.6;margin:8px 0}
 textarea{width:100%;min-height:80px;font:12px monospace;border:1px solid var(--hair);border-radius:10px;padding:8px}
 @media (prefers-reduced-motion: reduce){.act{transition:none}}
 </style>
@@ -288,6 +289,7 @@ function getSick(why){
   G.sick = true; G.sickSince = G.t; G.sickMistakeAt = null; G.medicineTries = 0;
   G.sleeping = G.napping = false;
   pet.run([{ anim:'sick', dur:2400, say: why === 'treat' ? '肚子痛痛…' : line('sick') }]);
+  toast('生病了！生病的時候不會長大，快用「藥草」治好吧');
 }
 function goSleep(byPlayer, online){
   G.sleeping = true; G.napping = false; G.sleptAt = G.t; G.fake = null;
@@ -477,11 +479,11 @@ for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(
 // 新增圖片後，把型態和動作登記在這裡（沒登記的不會去載入），並加進 sw.js 的 CORE 清單。
 const ART_ACTS = {
   egg: ['idle'],                       // 橡實蛋 v3（2026-11-25 定稿）
-  baby: ['idle', 'sleep'],             // 森林寶寶 v1（2026-11-25 定稿）；sleep 2026-11-28
+  baby: ['idle', 'sleep', 'sick', 'hold', 'hold_front'],   // 森林寶寶 v1（2026-11-25 定稿）；sleep、sick、hold 2026-11-28
   kuri:  ['idle', 'eat', 'sleep', 'play', 'sick', 'hold', 'hold_front'],  // 四隻幼年角色 v1（2026-11-25 定稿）；hold＝捧著食物（2026-11-25）
-  sunny: ['idle', 'eat', 'sleep', 'play', 'sick'],
-  dodo:  ['idle', 'eat', 'sleep', 'play', 'sick'],
-  piko:  ['idle', 'eat', 'sleep', 'play', 'sick'],
+  sunny: ['idle', 'eat', 'sleep', 'play', 'sick', 'hold', 'hold_front'],
+  dodo:  ['idle', 'eat', 'sleep', 'play', 'sick', 'hold', 'hold_front'],
+  piko:  ['idle', 'eat', 'sleep', 'play', 'sick', 'hold', 'hold_front'],
   kuri_p: ['idle'], kuri_r: ['idle'], kuri_f: ['idle'], kuri_h: ['idle'],   // 成年型 v1（2026-11-25）
   sunny_p: ['idle'], sunny_r: ['idle'], sunny_f: ['idle'], sunny_h: ['idle'],
   dodo_p: ['idle'], dodo_r: ['idle'], dodo_f: ['idle'], dodo_h: ['idle'],
@@ -494,7 +496,12 @@ for (const [f, acts] of Object.entries(ART_ACTS)) for (const a of acts){
 // 「捧著食物」姿勢：身體層 → 食物圖示 → 前掌層。錨點 [x 從中心, y 從底部, 圓半徑]，都是除以圖高（tools/holdpose.py 印出來的）
 const HOLD = {
   kuri: [-0.025, 0.297, 0.117],
+  sunny: [-0.067, 0.338, 0.116],
+  dodo: [-0.019, 0.411, 0.121],
+  piko: [-0.012, 0.331, 0.126],
+  baby: [-0.006, 0.285, 0.119],
 };
+{ const img = new Image(); img.onload = () => { IMG.poop = img; }; img.src = 'assets/props/poop.webp'; }
 // 食物圖示 v1（2026-11-25，ChatGPT 生成，tools/foodsheet.py 切圖）
 for (const id of Object.keys(FOOD)){ const img = new Image(); img.onload = () => { IMG[`food_${id}`] = img; }; img.src = `assets/food/${id}.webp`; }
 function drawFoodImg(id, x, y, size){
@@ -550,7 +557,8 @@ function drawPet(p, now){
 const BABY_EYES = [[-.105, .388], [.209, .388]], BABY_LEAF = [.139, .90];
 function babyOverlay(s, hgt, w, now){
   const hint = Gr.babyHint(G.hidden), t = now / 1000;
-  if (!(G.sleeping && IMG.baby_act_sleep) && (hint.level === 2 || (hint.level === 1 && (t % 6) < 1.5))){   // 睡覺圖的葉子位置不同，睡著時不提示
+  const alt = (G.sleeping && IMG.baby_act_sleep) || (pet.anim === 'eat' && pet.prop && IMG.baby_act_hold) || ((G.sick || pet.anim === 'sick' || pet.anim === 'medicine') && IMG.baby_act_sick);   // 換成別張圖時葉子位置不同
+  if (!alt && (hint.level === 2 || (hint.level === 1 && (t % 6) < 1.5))){   // 睡覺圖的葉子位置不同，睡著時不提示
     const x = BABY_LEAF[0] * w, y = -BABY_LEAF[1] * hgt, r = hgt * .1;
     const g = ctx.createRadialGradient(x, y, r * .2, x, y, r);
     g.addColorStop(0, CAT_TINT[hint.cat] + 'CC'); g.addColorStop(1, CAT_TINT[hint.cat] + '00');
@@ -757,13 +765,22 @@ function drawForest(now){
 }
 function shade(hex, k){ if (!k) return hex; const n = parseInt(hex.slice(1), 16), f = 1 - k; return `rgb(${round((n >> 16 & 255) * f + 30 * k)},${round((n >> 8 & 255) * f + 40 * k)},${round((n & 255) * f + 90 * k)})`; }
 function drawPoops(now){
-  for (const p of G.poops){ emoji('💩', p.x, p.y - 10 + sin(now / 400 + p.x) * .6, 22); }
+  for (const p of G.poops){
+    const img = IMG.poop, y = p.y - 2, k = 1 + sin(now / 400 + p.x) * .03;   // 便便 v1（2026-11-28，繪本風），沒載到時用 emoji
+    if (img){ const h = 30 * k, w = img.width * h / img.height; ctx.drawImage(img, p.x - w / 2, y - h, w, h); }
+    else emoji('💩', p.x, p.y - 10, 22);
+    // 臭臭線
+    ctx.strokeStyle = 'rgba(140,120,80,.55)'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    for (let i = -1; i <= 1; i += 2){ const c = ((now / 1400) + (i + 1) * .3 + p.x * .01) % 1, sx = p.x + i * 9, sy = y - 32 - c * 14;
+      ctx.globalAlpha = .9 * (1 - c); ctx.beginPath(); ctx.moveTo(sx, sy + 8); ctx.quadraticCurveTo(sx + 4, sy + 4, sx, sy); ctx.quadraticCurveTo(sx - 4, sy - 4, sx, sy - 8); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+  }
 }
 
 /* =====================================================================
    小遊戲 1：接果子（從框架的接點心改）
    ===================================================================== */
-const GOOD = ['🍓', '🍎', '🥕', '🍯', '🍄', '🍊'];
+const GOOD = ['F05', 'F07', 'F01', 'F09', 'F13', 'F06', 'F03', 'F10'];   // 掉下來的果子＝食物圖示（沒載到時用 emoji）
 function startCatch(){
   pet.queue = []; pet.cur = null; pet.target = null;
   mg = { kind:'catch', t0: performance.now(), score: 0, items: [], spawn: 0, px: W / 2, tx: W / 2, done: false, saved: { x: pet.x, y: pet.y }, clover: false };
@@ -796,7 +813,7 @@ function drawCatch(now){
   const g = mg, e = (now - g.t0) / 1000;
   const grad = ctx.createLinearGradient(0, 0, 0, H); grad.addColorStop(0, '#DFF1FA'); grad.addColorStop(1, '#E9F5D6'); ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#9CCB6F'; ctx.fillRect(0, H - 8, W, 8);
-  for (const it of g.items) emoji(it.ch, it.x, it.y, 28);
+  for (const it of g.items){ if (FOOD[it.ch]) drawFoodImg(it.ch, it.x, it.y, 34); else emoji(it.ch, it.x, it.y, 28); }
   drawPet(pet, now); drawSpeech(pet, now);
   if (g.pop && now - g.pop.t < 600){ ctx.globalAlpha = 1 - (now - g.pop.t) / 600; txt(g.pop.txt, g.pop.x, g.pop.y - 20 - (now - g.pop.t) / 20, 18, '#4E8A36'); ctx.globalAlpha = 1; }
   hud(`接果子　${g.score} 個`, `${max(0, 20 - floor(e))} 秒`);
@@ -1073,6 +1090,7 @@ function openStatus(){
       <span class="k">乖巧</span><span class="meter" role="meter" aria-valuenow="${G.discipline}" aria-valuemin="0" aria-valuemax="100"><b style="width:${G.discipline}%"></b></span>
       <span class="k">第幾代</span><span>${G.gen}</span>
     </div>
+    ${G.sick ? `<p class="warn">🤒 生病中：生病的時候不會長大，用「藥草」治好就會繼續成長。</p>` : ''}
     ${G.diary[0] ? `<div class="diary">📔 ${G.diary[0].text}</div>` : ''}
     ${adult ? `<p>長大了！可以讓${petName()}回到森林生活，留在圖鑑裡，再孵一顆新的蛋。</p><button class="plain" type="button" id="btnRetire">🌳 送回森林、孵新的蛋</button>` : ''}
     <button class="close" type="button" data-close>關閉</button>`, () => {

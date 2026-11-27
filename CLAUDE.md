@@ -14,6 +14,8 @@ https://omg155195-676.github.io/woodland-pals-little-life/
 - `assets/characters/{型態}/face/`：表情圖；目前幼年四角色的表情用 LINE 日常表情貼（暫代）
 - `assets/characters/{型態}/act/{型態}_act_{idle|eat|sleep|play|sick}.webp`：正式動作圖（蛋、寶寶、四隻幼年已完成；成年型尚未製作）。新增後要登記在 `index.html` 的 `ART_ACTS`。去背用 `tools/cutout.py`
 - `assets/backgrounds/bg_forest_{day|dusk|night}.webp`：森林背景（已完成），登記在 `ART_BG`
+- `assets/food/{F01…F16,T01…T04}.webp`：食物圖示；`assets/props/poop.webp`：便便
+- 捧食物姿勢 `{型態}_act_hold(_front).webp`：`tools/holdpose.py` 產生，錨點登記在 `HOLD`；森林寶寶帽子顏色用 `tools/capmatch.py` 對齊
 - `tests/growth.test.mjs`：規則測試，`node --test tests/growth.test.mjs`
 - `tools/simulate.mjs`：平衡模擬（機器人玩家），`node tools/simulate.mjs 2000`
 - `tools/hires.py`：沿用自框架的放大＋去背工具；裁切位置是 mare-freya 的，處理 ChatGPT 圖時要改
