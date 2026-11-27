@@ -477,7 +477,7 @@ for (const ch of Object.keys(FACE_FILES)) for (const n of new Set(Object.values(
 // 新增圖片後，把型態和動作登記在這裡（沒登記的不會去載入），並加進 sw.js 的 CORE 清單。
 const ART_ACTS = {
   egg: ['idle'],                       // 橡實蛋 v3（2026-11-25 定稿）
-  baby: ['idle'],                      // 森林寶寶 v1（2026-11-25 定稿）
+  baby: ['idle', 'sleep'],             // 森林寶寶 v1（2026-11-25 定稿）；sleep 2026-11-28
   kuri:  ['idle', 'eat', 'sleep', 'play', 'sick', 'hold', 'hold_front'],  // 四隻幼年角色 v1（2026-11-25 定稿）；hold＝捧著食物（2026-11-25）
   sunny: ['idle', 'eat', 'sleep', 'play', 'sick'],
   dodo:  ['idle', 'eat', 'sleep', 'play', 'sick'],
@@ -550,14 +550,15 @@ function drawPet(p, now){
 const BABY_EYES = [[-.105, .388], [.209, .388]], BABY_LEAF = [.139, .90];
 function babyOverlay(s, hgt, w, now){
   const hint = Gr.babyHint(G.hidden), t = now / 1000;
-  if (hint.level === 2 || (hint.level === 1 && (t % 6) < 1.5)){
+  if (!(G.sleeping && IMG.baby_act_sleep) && (hint.level === 2 || (hint.level === 1 && (t % 6) < 1.5))){   // 睡覺圖的葉子位置不同，睡著時不提示
     const x = BABY_LEAF[0] * w, y = -BABY_LEAF[1] * hgt, r = hgt * .1;
     const g = ctx.createRadialGradient(x, y, r * .2, x, y, r);
     g.addColorStop(0, CAT_TINT[hint.cat] + 'CC'); g.addColorStop(1, CAT_TINT[hint.cat] + '00');
     ctx.fillStyle = g; ell(x, y, r, r); ctx.fill();
     if (hint.cat === 'S'){ ell(x + r * .7, y - r * .5, 3, 3); fs('#FFE27A'); }
   }
-  if (G.sleeping || s.face === 'sleepy'){
+  // 有正式睡覺圖就不用畫閉眼（舊的蓋眼睛畫法蓋不乾淨，大眼睛邊緣會露出來）
+  if ((G.sleeping && !IMG.baby_act_sleep) || (!G.sleeping && s.face === 'sleepy')){
     const er = hgt * .05;
     for (const [ex, ey] of BABY_EYES){
       const x = ex * w, y = -ey * hgt;

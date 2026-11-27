@@ -47,6 +47,8 @@
 ### 2.2 森林寶寶（BABY）— ✅ 定稿 v1（2026-11-25）
 - ChatGPT 對話「橡實蛋設計稿」中的森林寶寶第 1 張（兩張選項中選「圖像 1」：帽子與橡實蛋完全一致、描邊較粗、小尺寸較清楚）
 - 遊戲圖：`assets/characters/baby/act/baby_act_idle.webp`（299×384，透明）
+- 睡覺圖：`assets/characters/baby/act/baby_act_sleep.webp`（2026-11-28）：閉眼、蓋大樹葉被子；帽子大小對齊 idle。原本用程式在 idle 上蓋閉眼，大眼睛邊緣會露出來，所以改成正式圖。第一次生成的帽子少了菱格紋、多了鼻子和捲毛，已要求照定稿修正。
+- 吃東西：`kuri_act_hold.webp`＋`kuri_act_hold_front.webp`（2026-11-25）捧著洋紅圓佔位，`tools/holdpose.py` 拆成身體層與前掌層，食物圖示（`assets/food/`，`tools/foodsheet.py`）夾在中間。其他角色照同樣方式補。
 - 程式疊加：睡覺時閉眼；飲食傾向提示改成「嫩芽周圍的彩色光暈」（綠＝菜園、橘＝陽光、棕＝蜂蜜、紫＝好奇），陽光另加小光點
 - 之後可再請 ChatGPT 補吃東西、睡覺、生病的專用圖
 - 以下為原始提案：

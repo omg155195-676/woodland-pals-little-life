@@ -1,5 +1,5 @@
 // 離線快取：任何檔案改動後都要把 VERSION 加一（wp-life-v1 → wp-life-v2），新增的素材也要加進 CORE 清單。
-const VERSION = 'wp-life-v13';
+const VERSION = 'wp-life-v14';
 const CORE = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const CORE = [
   './assets/backgrounds/bg_forest_night.webp',
   './assets/characters/egg/act/egg_act_idle.webp',
   './assets/characters/baby/act/baby_act_idle.webp',
+  './assets/characters/baby/act/baby_act_sleep.webp',
   './assets/characters/kuri/act/kuri_act_idle.webp',
   './assets/characters/kuri/act/kuri_act_eat.webp',
   './assets/characters/kuri/act/kuri_act_sleep.webp',
