@@ -1,5 +1,5 @@
 // 離線快取：任何檔案改動後都要把 VERSION 加一（wp-life-v1 → wp-life-v2），新增的素材也要加進 CORE 清單。
-const VERSION = 'wp-life-v15';
+const VERSION = 'wp-life-v16';
 const CORE = [
   './',
   './index.html',
@@ -105,7 +105,8 @@ const CORE = [
   './assets/characters/baby/act/baby_act_hold.webp',
   './assets/characters/baby/act/baby_act_hold_front.webp',
   './assets/characters/baby/act/baby_act_sick.webp',
-  './assets/props/poop.webp'];
+  './assets/props/poop.webp',
+  './assets/characters/kuri_r/act/kuri_r_act_sleep.webp'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
