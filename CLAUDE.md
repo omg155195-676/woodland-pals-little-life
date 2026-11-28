@@ -12,7 +12,7 @@ https://omg155195-676.github.io/woodland-pals-little-life/
 - `sw.js`：離線快取。**任何檔案改動後都要把 `VERSION` 加一**（例如 `wp-life-v1` → `wp-life-v2`），新增的素材也要加進 `CORE` 清單
 - `manifest.webmanifest`、`icons/`：PWA 安裝設定與 App 圖示（森林寶寶從橡實蛋探頭，ChatGPT 生成；maskable 版外圍加留白）
 - `assets/characters/{型態}/face/`：表情圖；目前幼年四角色的表情用 LINE 日常表情貼（暫代）
-- `assets/characters/{型態}/act/{型態}_act_{idle|eat|sleep|play|sick}.webp`：正式動作圖（蛋、寶寶、四隻幼年已完成；成年型尚未製作）。新增後要登記在 `index.html` 的 `ART_ACTS`。去背用 `tools/cutout.py`
+- `assets/characters/{型態}/act/{型態}_act_{idle|eat|sleep|play|sick}.webp`：正式動作圖（蛋、寶寶、四隻幼年已完成；成年型有 idle＋sleep，生病與捧食物尚未製作）。新增後要登記在 `index.html` 的 `ART_ACTS`。去背用 `tools/cutout.py`
 - `assets/backgrounds/bg_forest_{day|dusk|night}.webp`：森林背景（已完成），登記在 `ART_BG`
 - `assets/food/{F01…F16,T01…T04}.webp`：食物圖示；`assets/props/poop.webp`：便便
 - 捧食物姿勢 `{型態}_act_hold(_front).webp`：`tools/holdpose.py` 產生，錨點登記在 `HOLD`；森林寶寶帽子顏色用 `tools/capmatch.py` 對齊
